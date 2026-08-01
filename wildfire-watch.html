@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wildfire Watch — Family Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14130f;
+    --panel:#1e1c17;
+    --panel2:#242119;
+    --border:#38342b;
+    --paper:#ede8dd;
+    --ash:#a39d8d;
+    --ash-dim:#726d5f;
+    --low:#2e8b57;
+    --moderate:#3577b0;
+    --high:#d6b32e;
+    --veryhigh:#e07b2b;
+    --extreme:#c13b2b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image: radial-gradient(circle at 20% 0%, rgba(214,179,46,0.05), transparent 45%),
+                       radial-gradient(circle at 90% 10%, rgba(193,59,43,0.06), transparent 40%);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 18px 60px;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.03em;}
+
+  header.top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:2px solid var(--border);padding-bottom:14px;margin-bottom:16px;}
+  header.top .title{display:flex;align-items:center;gap:10px;}
+  header.top .title .flame{color:var(--extreme);font-size:22px;}
+  header.top h1{font-size:22px;margin:0;font-weight:600;}
+  header.top .sub{color:var(--ash-dim);font-size:12px;letter-spacing:.08em;}
+
+  .tabbar{display:flex;gap:6px;margin-bottom:18px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:4px;}
+  .tabbtn{flex:1;text-align:center;padding:10px 8px;border-radius:8px;cursor:pointer;font-family:'Oswald';letter-spacing:.05em;text-transform:uppercase;font-size:13px;color:var(--ash);border:1px solid transparent;transition:.15s;}
+  .tabbtn.active{background:var(--panel2);color:var(--paper);border-color:var(--border);}
+  .tabbtn:hover{color:var(--paper);}
+
+  .loc-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:18px;font-size:13px;}
+  .loc-row label{color:var(--ash-dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
+  .loc-row input{background:var(--bg);border:1px solid var(--border);color:var(--paper);border-radius:6px;padding:6px 8px;font-family:'IBM Plex Mono';font-size:12px;width:90px;}
+  .loc-row input.city{width:110px;}
+  .loc-row button{background:var(--high);color:#1c1b19;border:none;border-radius:6px;padding:7px 14px;font-family:'Oswald';letter-spacing:.05em;text-transform:uppercase;font-size:12px;cursor:pointer;font-weight:600;}
+  .loc-row button:hover{filter:brightness(1.1);}
+  .loc-status{color:var(--ash-dim);font-size:11px;margin-left:auto;}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
+  .panel h2{font-family:'Oswald';text-transform:uppercase;letter-spacing:.04em;font-size:14px;color:var(--ash);margin:0 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+
+  /* Hero gauge */
+  .hero{display:flex;gap:26px;flex-wrap:wrap;align-items:center;}
+  .gaugebox{width:260px;height:150px;position:relative;overflow:hidden;flex:0 0 auto;}
+  .gaugebg{width:260px;height:260px;border-radius:50%;position:absolute;top:0;left:0;
+    background:conic-gradient(from -90deg,
+      var(--low) 0deg 36deg, var(--moderate) 36deg 72deg, var(--high) 72deg 108deg,
+      var(--veryhigh) 108deg 144deg, var(--extreme) 144deg 180deg, transparent 180deg 360deg);
+    mask: radial-gradient(circle at 50% 100%, transparent 62px, #000 63px);
+  }
+  .needle{position:absolute;bottom:0;left:50%;width:4px;height:118px;background:var(--paper);
+    transform-origin:bottom center;transform:rotate(-90deg);border-radius:3px 3px 0 0;
+    box-shadow:0 0 6px rgba(237,232,221,.6);transition:transform .8s ease;}
+  .needlehub{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:var(--paper);}
+  .gaugelabels{position:absolute;bottom:2px;width:100%;display:flex;justify-content:space-between;font-size:9px;color:var(--ash-dim);padding:0 4px;font-family:'IBM Plex Mono';}
+  .heroinfo{flex:1;min-width:220px;}
+  .cat-pill{display:inline-block;font-family:'Oswald';letter-spacing:.05em;text-transform:uppercase;font-size:26px;font-weight:600;padding:2px 10px;border-radius:6px;margin-bottom:6px;}
+  .heroinfo .desc{color:var(--ash);font-size:13px;line-height:1.5;margin:6px 0 10px;}
+  .heroinfo .updated{color:var(--ash-dim);font-size:11px;font-family:'IBM Plex Mono';}
+  .caveat{font-size:11px;color:var(--ash-dim);border-top:1px dashed var(--border);margin-top:10px;padding-top:8px;line-height:1.5;}
+
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:14px;}
+  .metric{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+  .metric .k{font-size:10px;color:var(--ash-dim);text-transform:uppercase;letter-spacing:.06em;}
+  .metric .v{font-family:'IBM Plex Mono';font-size:20px;margin-top:2px;}
+
+  .rainlog{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:12.5px;color:var(--ash);}
+  .rainlog input[type=date]{background:var(--panel2);border:1px solid var(--border);color:var(--paper);border-radius:6px;padding:5px 7px;font-family:'IBM Plex Mono';font-size:12px;}
+  .rainlog button{border:none;border-radius:6px;padding:6px 12px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;font-size:11.5px;cursor:pointer;}
+  .rainlog button#btnLogRain{background:var(--moderate);color:#fff;font-weight:600;}
+  .rainlog button.secondary{background:var(--panel2);color:var(--ash);border:1px solid var(--border);}
+
+  .expandbtn{background:var(--panel2);color:var(--paper);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;font-size:11.5px;cursor:pointer;white-space:nowrap;}
+  .expandbtn:hover{background:var(--border);}
+  .fs-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;padding:14px;}
+  .fs-overlay.hidden{display:none;}
+  .fs-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex:0 0 auto;}
+  .fs-overlay iframe{flex:1;width:100%;border-radius:8px;}
+
+  .stagebar{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap;}
+  .stagebar .seg{flex:1;min-width:70px;text-align:center;padding:9px 4px;border-radius:6px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.04em;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--ash-dim);background:var(--panel2);transition:.15s;}
+  .stagebar .seg:hover{border-color:var(--ash-dim);}
+  .stagebar .seg.done{color:var(--ash);}
+  .stagebar .seg.current{font-weight:700;border-color:transparent;}
+
+  .alertlist{display:flex;flex-direction:column;gap:8px;}
+  .alertitem{border-left:3px solid var(--high);background:var(--panel2);border-radius:0 8px 8px 0;padding:8px 12px;font-size:13px;}
+  .alertitem.sev-extreme,.alertitem.sev-severe{border-left-color:var(--extreme);}
+  .alertitem.sev-moderate{border-left-color:var(--high);}
+  .alertitem .ev{font-weight:600;}
+  .alertitem .exp{color:var(--ash-dim);font-size:11px;font-family:'IBM Plex Mono';margin-top:2px;}
+  .empty-ok{color:var(--low);font-size:13px;font-family:'IBM Plex Mono';}
+  .err{color:var(--ash-dim);font-size:12px;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+  .card .tag{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ash-dim);}
+  .card h3{margin:0;font-size:15px;font-weight:600;}
+  .card p{margin:0;font-size:12.5px;color:var(--ash);line-height:1.5;flex:1;}
+  .card a.btn{align-self:flex-start;margin-top:4px;text-decoration:none;background:var(--border);color:var(--paper);font-size:12px;padding:6px 12px;border-radius:6px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;}
+  .card a.btn:hover{background:var(--ash-dim);}
+  .card.highlight{border-color:var(--high);background:linear-gradient(180deg,rgba(214,179,46,.08),var(--panel2));}
+  .card.highlight a.btn{background:var(--high);color:#1c1b19;font-weight:600;}
+
+  iframe{border:none;border-radius:8px;width:100%;}
+  .widgetrow{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+
+  .checklist{display:flex;flex-direction:column;gap:6px;}
+  .checklist label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ash);cursor:pointer;}
+  .checklist input{margin-top:3px;accent-color:var(--high);}
+  .checklist label.done{color:var(--ash-dim);text-decoration:line-through;}
+
+  footer{color:var(--ash-dim);font-size:11px;text-align:center;margin-top:30px;line-height:1.6;}
+  .hidden{display:none;}
+  @media (max-width:600px){.hero{flex-direction:column;} .gaugebox{width:220px;height:130px;} .gaugebg{width:220px;height:220px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="title"><span class="flame">▲</span><h1>Wildfire Watch</h1></div>
+    <div class="sub mono">FAMILY REFERENCE PANEL &middot; NOT AN OFFICIAL ALERT SYSTEM</div>
+  </header>
+
+  <div class="tabbar">
+    <div class="tabbtn active" data-tab="baseline">Baseline Watch</div>
+    <div class="tabbtn" data-tab="active">Active Incident Watch</div>
+    <div class="tabbtn" data-tab="evac">Evacuation Watch</div>
+  </div>
+
+  <div class="loc-row">
+    <label>City</label><input class="city mono" id="inCity" value="Park City">
+    <label>State</label><input class="mono" id="inState" value="UT" style="width:44px">
+    <label>Lat</label><input class="mono" id="inLat" value="40.6935">
+    <label>Lon</label><input class="mono" id="inLon" value="-111.4805">
+    <button id="btnUpdate">Set Location</button>
+    <span class="loc-status mono" id="locStatus">watching Park City, UT (Trailside/Sagebrook, approx.)</span>
+  </div>
+
+  <!-- ============ TAB 1: BASELINE ============ -->
+  <div id="tab-baseline">
+
+    <div class="panel">
+      <h2>Ambient Fire-Weather Risk (DIY Estimate)</h2>
+      <div class="hero">
+        <div class="gaugebox">
+          <div class="gaugebg"></div>
+          <div class="needle" id="needle"></div>
+          <div class="needlehub"></div>
+          <div class="gaugelabels"><span>LOW</span><span>MOD</span><span>HIGH</span><span>V.HIGH</span><span>EXTREME</span></div>
+        </div>
+        <div class="heroinfo">
+          <div class="cat-pill" id="catPill" style="background:var(--low);color:#0d1a12;">LOADING…</div>
+          <div class="desc" id="catDesc">Fetching live wind, humidity and temperature from the National Weather Service…</div>
+          <div class="updated mono" id="updatedAt">—</div>
+        </div>
+      </div>
+      <div class="metrics" id="metrics">
+        <div class="metric"><div class="k">Wind</div><div class="v" id="mWind">—</div></div>
+        <div class="metric"><div class="k">Rel. Humidity</div><div class="v" id="mRH">—</div></div>
+        <div class="metric"><div class="k">Temp</div><div class="v" id="mTemp">—</div></div>
+        <div class="metric"><div class="k">Since Significant Rain <span class="mono" id="rainSourceTag" style="color:var(--ash-dim);"></span></div><div class="v" id="mRain">—</div></div>
+      </div>
+      <div class="rainlog">
+        <span>Actually rained at your house?</span>
+        <input type="date" id="manualRainInput" class="mono">
+        <button id="btnLogRain">Log it</button>
+        <button id="btnClearRain" class="secondary">Use model estimate instead</button>
+      </div>
+      <div class="caveat">This gauge is a simplified estimate — wind, humidity, heat, and days since significant rain (≥0.1in/2.5mm, from Open-Meteo's daily rainfall history) — computed live and rebalanced across those four factors. It is <strong>not</strong> an official fire danger rating. For the authoritative rating, check the Great Basin GACC and Utah Fire Info links below. Always defer to official Red Flag Warnings and evacuation orders.<br><br><strong>Local note:</strong> Trailside/Sagebrook sits directly against Round Valley's sagebrush, scrub oak and grassland — a classic wildland-urban interface. That fuel dries out fast in a hot, low-humidity stretch, so treat sustained wind + low humidity + a long rain-free stretch as your cue to check FIRMS even with no smoke visible yet.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Active NWS Alerts For Your Location</h2>
+      <div id="alertsBaseline" class="alertlist"><div class="err mono">loading…</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Smoke / Air Quality Right Now</h2>
+      <div class="widgetrow">
+        <div class="card" style="flex:0 0 200px;">
+          <div class="tag">Live AQI dial</div>
+          <h3>AirNow — Park City, UT</h3>
+          <p>AirNow blocks its widget from loading inside locally-opened HTML files, so this opens the live dial in its own tab instead.</p>
+          <a class="btn" id="airnowLink" href="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" target="_blank">Open live AQI dial ↗</a>
+        </div>
+        <div style="flex:1;min-width:220px;font-size:13px;color:var(--ash);">
+          Even without a nearby fire, smoke can drift in from hundreds of miles away. A sudden AQI spike with no other explanation is often the first sign of a new fire upwind — worth cross-checking against the satellite map below.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Fuel Moisture / Energy Release Component (ERC)</h2>
+      <p style="font-size:13px;color:var(--ash);margin-top:0;">This is the real, agency-computed measure of how "ready to burn" the dead and live vegetation is — the professional version of the DIY rain-days factor above. It only comes from specific RAWS fire-weather stations, not a generic API.</p>
+      <div class="grid" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="tag">No setup — pick your nearest station</div>
+          <h3>FEMS / WFAS Station Map</h3>
+          <p>Click the RAWS station nearest Trailside/Sagebrook (likely one in the Kamas/Wasatch Back or Uinta area) for its live ERC and 100/1000-hr fuel moisture chart.</p>
+          <a class="btn" href="https://fems.fs2c.usda.gov/gmap" target="_blank">Open station map ↗</a>
+        </div>
+      </div>
+      <div class="rainlog" style="margin-top:0;">
+        <span>Optional live feed — Synoptic API token</span>
+        <input type="text" id="synToken" class="mono" placeholder="paste your free token" style="width:180px;">
+        <span>Station ID</span>
+        <input type="text" id="synStation" class="mono" placeholder="e.g. TS123" style="width:90px;">
+        <button id="btnConnectFuel">Connect</button>
+        <button id="btnClearFuel" class="secondary">Clear</button>
+      </div>
+      <div id="fuelResult" style="margin-top:10px;font-size:13px;color:var(--ash);"></div>
+      <div class="caveat" style="margin-top:10px;">Get a free token at <a href="https://synopticdata.com/get-started" target="_blank" style="color:var(--high);">synopticdata.com</a>, then find your nearest station's ID using their <a href="https://explore.synopticdata.com" target="_blank" style="color:var(--high);">station explorer</a> — confirm it lists "fuel moisture" or "ERC" among its variables before connecting, since not all RAWS stations compute these. Your token stays in this file only; it's never sent anywhere but Synoptic's own API.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Deeper Sources — Check These When Something Feels Off</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="tag">Satellite &middot; catches fires before they're reported</div>
+          <h3>NASA FIRMS Fire Map</h3>
+          <p>Near-real-time satellite heat detections (VIIRS/MODIS), updated multiple times a day. Often shows a new hotspot before any agency announcement.</p>
+          <a class="btn" href="https://firms.modaps.eosdis.nasa.gov/usfs/map/" target="_blank">Open map ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">State agency</div>
+          <h3>Utah Fire Info</h3>
+          <p>Official statewide fire restrictions, active fire listings and prevention updates. Also follow @UtahWildfire on social media.</p>
+          <a class="btn" href="https://utahfireinfo.gov" target="_blank">Visit site ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Predictive services</div>
+          <h3>Great Basin GACC Outlook</h3>
+          <p>Regional significant-fire-potential outlook and energy release component trends for Utah/the Great Basin — the professional forecast behind local fire danger signs.</p>
+          <a class="btn" href="https://gacc.nifc.gov/gbcc/" target="_blank">View outlook ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Fuel dryness</div>
+          <h3>Wildland Fire Assessment System</h3>
+          <p>Fuel moisture and Energy Release Component maps — a direct read on how ready local vegetation is to burn.</p>
+          <a class="btn" href="https://www.wfas.net" target="_blank">Open WFAS ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Drought context</div>
+          <h3>US Drought Monitor</h3>
+          <p>Weekly drought severity for your county — sustained drought is the slow-building backdrop behind most bad fire seasons.</p>
+          <a class="btn" href="https://www.drought.gov" target="_blank">Check drought.gov ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Official forecast</div>
+          <h3>NWS Fire Weather Zone Forecast</h3>
+          <p>The Red Flag Warning / Fire Weather Watch forecast discussion for your zone, straight from your local NWS office.</p>
+          <a class="btn" href="https://forecast.weather.gov/MapClick.php?lat=40.6935&lon=-111.4805" target="_blank">Open forecast ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: ACTIVE ============ -->
+  <div id="tab-active" class="hidden">
+
+    <div class="panel">
+      <h2>What Should We Be Doing Right Now?</h2>
+      <div class="stagebar" id="stageBar"></div>
+      <div class="cat-pill" id="stagePill" style="font-size:22px;">READY</div>
+      <div class="desc" id="stageDesc" style="color:var(--ash);font-size:13px;line-height:1.5;margin:6px 0 12px;"></div>
+      <div class="checklist" id="stageChecklist"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button id="btnStageBack" class="expandbtn">◀ Back a stage</button>
+        <button id="btnStageForward" class="expandbtn">Advance a stage ▶</button>
+      </div>
+      <div id="stageNudge" class="caveat" style="display:none;margin-top:12px;border-top:1px solid var(--extreme);color:var(--veryhigh);"></div>
+      <div class="caveat" style="margin-top:12px;">This is set by you, not by any feed — official Ready/Set/Go orders for your exact address always take priority over this gauge. It's here to keep everyone in the house aligned on what to do next.</div>
+    </div>
+
+    <div class="panel" style="border-color:var(--extreme);">
+      <h2 style="color:var(--veryhigh);">Should You Leave Even Without an Official Alert?</h2>
+      <p style="font-size:13px;color:var(--ash);margin-top:0;">Official alerts fail more often than people expect. After the 2023 Lahaina fire, a survivor survey found most people's <em>first</em> warning wasn't an official alert at all — about half saw the fire themselves, and many more were tipped off by neighbors already leaving. Cell towers, sirens, and dispatch centers have all failed at critical moments in fires like Camp, Tubbs, and Eaton/Palisades. Don't wait on a notification that may never arrive — check these honestly.</p>
+
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:14px 0;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ash-dim);margin-bottom:8px;">Live wind-driven threat check</div>
+        <div class="rainlog" style="margin-top:0;">
+          <span>Fire is about</span>
+          <input type="number" id="fireDistance" class="mono" placeholder="miles" style="width:70px;" min="0" step="0.1">
+          <span>mi</span>
+          <select id="fireBearing" class="mono" style="background:var(--bg);border:1px solid var(--border);color:var(--paper);border-radius:6px;padding:5px 7px;">
+            <option value="">direction from home…</option>
+            <option value="0">N</option><option value="22.5">NNE</option><option value="45">NE</option><option value="67.5">ENE</option>
+            <option value="90">E</option><option value="112.5">ESE</option><option value="135">SE</option><option value="157.5">SSE</option>
+            <option value="180">S</option><option value="202.5">SSW</option><option value="225">SW</option><option value="247.5">WSW</option>
+            <option value="270">W</option><option value="292.5">WNW</option><option value="315">NW</option><option value="337.5">NNW</option>
+          </select>
+          <button id="btnCheckWindThreat">Check</button>
+        </div>
+        <div id="windThreatResult" style="margin-top:10px;font-size:13px;"></div>
+        <div style="font-size:11px;color:var(--ash-dim);margin-top:6px;">Get the fire's rough direction/distance from Watch Duty or the NASA FIRMS map. Direction = which way the fire is from your house, e.g. pick "NE" if the fire is to your northeast.</div>
+      </div>
+
+      <h3 style="font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;font-size:13px;color:var(--extreme);margin:16px 0 8px;">Any ONE of these true → leave now, don't wait for an order</h3>
+      <div class="checklist" id="hardTriggers">
+        <label><input type="checkbox" data-group="hard"> I can see flames, or a smoke column visibly closer than earlier today</label>
+        <label><input type="checkbox" data-group="hard"> Ash or embers are landing in my yard or neighborhood</label>
+        <label><input type="checkbox" data-group="hard"> The daytime sky has turned orange, brown, or dark from smoke</label>
+        <label><input type="checkbox" data-group="hard"> Neighbors near me are already leaving</label>
+      </div>
+      <div id="hardTriggerResult"></div>
+
+      <h3 style="font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;font-size:13px;color:var(--high);margin:18px 0 8px;">TWO OR MORE of these true → strongly consider leaving proactively</h3>
+      <div class="checklist" id="softTriggers">
+        <label><input type="checkbox" data-group="soft"> Red Flag Warning is active and Watch Duty/FIRMS shows the fire within a few miles, moving toward me</label>
+        <label><input type="checkbox" data-group="soft"> My power has been shut off, or my utility has warned of a shutoff for fire risk</label>
+        <label><input type="checkbox" data-group="soft"> Watch Duty/InciWeb shows the fire growing quickly and heading my direction</label>
+        <label><input type="checkbox" data-group="soft"> It's nighttime and any of the above is also true — alerts are most often missed while asleep</label>
+        <label><input type="checkbox" data-group="soft"> Cell service or internet near me already feels spotty or degraded</label>
+      </div>
+      <div id="softTriggerResult"></div>
+
+      <div class="caveat" style="margin-top:12px;">A battery-powered NOAA Weather Radio with SAME alerting is worth owning as backup — it doesn't depend on cell towers or WiFi, both of which failed during several of the fires referenced above. These checkboxes reset each time you reopen the page on purpose, so they always reflect what's true right now, not an old reading.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Step 1 — If A Fire Is Reported Near You</h2>
+      <div class="grid">
+        <div class="card highlight">
+          <div class="tag">Best single source for a live, named fire</div>
+          <h3>Watch Duty</h3>
+          <p>Free nonprofit app (all 50 states, incl. Utah) staffed by firefighters/dispatchers monitoring radio traffic live. Shows fire perimeter, evacuation zones, and push alerts. Simple enough for kids and grandparents alike — put it on every family member's phone.</p>
+          <a class="btn" href="https://www.watchduty.org/" target="_blank">Open Watch Duty ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Official incident record</div>
+          <h3>InciWeb</h3>
+          <p>Federal/state incident information system: containment %, resources assigned, official updates and maps for named, actively-managed fires.</p>
+          <a class="btn" href="https://inciweb.wildfire.gov" target="_blank">Open InciWeb ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">National situational picture</div>
+          <h3>NIFC Large Fire Map</h3>
+          <p>National Interagency Fire Center's map of all significant large fires currently being managed across the country.</p>
+          <a class="btn" href="https://www.nifc.gov/fire-information/nfn" target="_blank">Open NIFC ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Active NWS Alerts &amp; Warnings</h2>
+      <div id="alertsActive" class="alertlist"><div class="err mono">loading…</div></div>
+    </div>
+
+    <div class="panel" id="windPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px;">
+        <h2 style="border:none;margin:0;padding:0;">Fire Growth &amp; Wind Direction (Where Will Smoke/Fire Go?)</h2>
+        <button id="btnExpandWind" class="expandbtn">⛶ Expand</button>
+      </div>
+      <div class="widgetrow" id="windWidgetRow">
+        <iframe id="windyWidget" title="Windy wind map" height="320" width="100%" src="https://embed.windy.com/embed2.html?lat=40.6935&lon=-111.4805&zoom=9&level=surface&overlay=wind&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" style="min-width:280px;flex:1;"></iframe>
+      </div>
+      <p style="font-size:12px;color:var(--ash);margin-top:8px;" id="windCaption">Fires generally move with the wind. Cross-check this with the <a href="https://firms.modaps.eosdis.nasa.gov/usfs/map/" target="_blank" style="color:var(--high);">NASA FIRMS map</a> to see whether new hotspots are appearing on the upwind or downwind side of a fire. If the wind map above doesn't load, <a href="https://www.windy.com/40.694/-111.481?wind" target="_blank" style="color:var(--high);">open Windy directly ↗</a>.</p>
+    </div>
+    <div id="windFullscreenOverlay" class="fs-overlay hidden">
+      <div class="fs-bar">
+        <span class="display" style="font-size:13px;letter-spacing:.04em;color:var(--ash);">WIND MAP</span>
+        <button id="btnCloseWind" class="expandbtn">✕ Close</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Get Alerted Directly (Set These Up Before You Need Them)</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="tag">Summit County &amp; Park City (joint program)</div>
+          <h3>Summit County Alert (Everbridge)</h3>
+          <p>Official evacuation, road-closure and wildfire alerts by text, phone or email — covers Trailside/Sagebrook and all of Snyderville Basin. Text "SUMMITALERTA" to 888777 for Spanish-language alerts.</p>
+          <a class="btn" href="https://summitcountyalerts.org" target="_blank">Sign up ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Summit County</div>
+          <h3>Active Fire &amp; Emergency Page</h3>
+          <p>The county's dedicated page for live wildfire updates, plus a separate signup hub — bookmark both for a fast-moving fire.</p>
+          <a class="btn" href="https://www.summitcounty.info/emergency" target="_blank">Open page ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Federal</div>
+          <h3>FEMA App</h3>
+          <p>Real-time National Weather Service alerts plus preparedness guidance and disaster resources, for iOS and Android.</p>
+          <a class="btn" href="https://www.fema.gov/mobile-app" target="_blank">Get the app ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">No sign-up needed</div>
+          <h3>Wireless Emergency Alerts (IPAWS)</h3>
+          <p>Evacuation orders are pushed automatically to any cell phone in the affected area, no registration required — just make sure alerts aren't muted in your phone settings.</p>
+          <a class="btn" href="https://www.fema.gov/emergency-managers/practitioners/integrated-public-alert-warning-system" target="_blank">How it works ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Smoke health impact</div>
+          <h3>AirNow Fire &amp; Smoke Map</h3>
+          <p>Combines sensor and satellite smoke-plume data — useful for deciding whether to evacuate early for air quality even before a fire threatens structures.</p>
+          <a class="btn" href="https://fire.airnow.gov" target="_blank">Open map ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Family Go-Checklist</h2>
+      <div class="checklist" id="checklist">
+        <label><input type="checkbox"> Go-bags packed (meds, documents, chargers, cash, pet supplies)</label>
+        <label><input type="checkbox"> Vehicle fuel tank at least half full</label>
+        <label><input type="checkbox"> Two evacuation routes agreed on, in different directions</label>
+        <label><input type="checkbox"> Out-of-area contact chosen; everyone knows to text, not call</label>
+        <label><input type="checkbox"> Watch Duty app + Summit County Alert (Everbridge) set up on every phone</label>
+        <label><input type="checkbox"> N95/KN95 masks on hand for smoke</label>
+        <label><input type="checkbox"> Photos of home/valuables for insurance saved off-site (cloud)</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 3: EVACUATION ============ -->
+  <div id="tab-evac" class="hidden">
+
+    <div class="panel">
+      <h2>Live Traffic Cameras</h2>
+      <p style="font-size:13px;color:var(--ash);margin-top:0;">A direct, always-current live camera thumbnail feed requires a free UDOT developer API key — their raw camera-image API is key-gated, and individual camera page links have proven to drift/redirect over time as UDOT reorganizes their site. These hubs are the stable, official way in instead.</p>
+      <div class="grid">
+        <div class="card highlight">
+          <div class="tag">Official — covers this exact corridor</div>
+          <h3>UDOT Wasatch Back</h3>
+          <p>UDOT's dedicated resource for Parleys Canyon (I-80) through Kimball Junction to Park City — road status, camera links and construction/closure alerts specific to your routes out.</p>
+          <a class="btn" href="https://wasatchback.udot.utah.gov/road-information/" target="_blank">Open Road Information ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Official — statewide</div>
+          <h3>UDOT CommuterLink Map</h3>
+          <p>The full interactive map — search or zoom to any camera on I-80, US-40, or SR-224/248 for a live still image.</p>
+          <a class="btn" href="https://www.udottraffic.utah.gov" target="_blank">Open CommuterLink Map ↗</a>
+        </div>
+        <div class="card">
+          <div class="tag">Community aggregator (unofficial)</div>
+          <h3>Wasatch Roads</h3>
+          <p>A cleaner third-party map of the same official UDOT camera feeds, with the ability to star your go-to cameras. Not run by UDOT — treat it as a convenience layer, not a primary source.</p>
+          <a class="btn" href="https://wasatchroads.com/udot-cameras" target="_blank">Open Wasatch Roads ↗</a>
+        </div>
+      </div>
+      <div class="caveat" style="margin-top:12px;">If you'd like true live camera thumbnails embedded directly on this page (like the fuel moisture feed above), UDOT issues free developer API keys — get one and I can wire it in the same way.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Evacuation Routes From Trailside/Sagebrook</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="tag">Primary route</div>
+          <h3>Highway 40 → I-80</h3>
+          <p>Your most direct way out toward Salt Lake City / west. Check the Kimball Junction and Silver Creek Junction cameras above before committing — this junction is a common bottleneck.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Alternate route</div>
+          <h3>Kearns Blvd / SR-248 → Old Town</h3>
+          <p>Routes toward central Park City rather than away from the basin — useful if Highway 40/I-80 is congested or closed, but confirm it's not moving you toward the fire, not away from it.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Local coverage</div>
+          <h3>KSL News</h3>
+          <p>Utah's most active outlet for live wildfire coverage, reporter updates and evacuation-order confirmations.</p>
+          <a class="btn" href="https://www.ksl.com" target="_blank">Open KSL ↗</a>
+        </div>
+      </div>
+      <div class="caveat" style="margin-top:12px;">Wind direction matters for route choice too, not just fire location — a route that looks clear on a map can still run you straight through a smoke plume. Check the wind map on the Active Incident tab before you commit.</div>
+    </div>
+  </div>
+
+  <footer>
+    Built from public sources: NWS/api.weather.gov, AirNow.gov, Windy.com, NASA FIRMS, InciWeb, NIFC, Watch Duty, Summit County &amp; Park City emergency management, Great Basin GACC, WFAS, drought.gov.<br>
+    This page aggregates public information for convenience. It is not a substitute for official evacuation orders — if told to evacuate, leave immediately.
+  </footer>
+</div>
+
+<script>
+let state = { lat: 40.6935, lon: -111.4805, city: "Park City", stateAbbr: "UT" };
+
+const TAB_IDS = ['baseline','active','evac'];
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    TAB_IDS.forEach(id=>{
+      document.getElementById('tab-'+id).classList.toggle('hidden', btn.dataset.tab!==id);
+    });
+  });
+});
+
+document.getElementById('btnUpdate').addEventListener('click', ()=>{
+  const lat = parseFloat(document.getElementById('inLat').value);
+  const lon = parseFloat(document.getElementById('inLon').value);
+  const city = document.getElementById('inCity').value.trim() || 'Location';
+  const st = document.getElementById('inState').value.trim() || '';
+  if(isNaN(lat) || isNaN(lon)){ alert('Enter valid latitude/longitude.'); return; }
+  state = { lat, lon, city, stateAbbr: st };
+  document.getElementById('locStatus').textContent = `watching ${city}, ${st}`;
+  document.getElementById('airnowLink').href = `https://widget.airnow.gov/aq-dial-widget/?city=${encodeURIComponent(city)}&state=${encodeURIComponent(st)}&country=USA`;
+  document.getElementById('windyWidget').src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=8&level=surface&overlay=wind&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
+  restoreManualRain().then(loadAll);
+});
+
+const STAGES = [
+  { key:'aware', label:'Aware', color:'var(--moderate)', text:'#0b1a22',
+    desc:'A fire has been reported in the region. No immediate threat to Trailside/Sagebrook yet — start paying closer attention.',
+    actions:['Open Watch Duty and confirm the fire\'s location relative to home','Check InciWeb/NIFC for size, containment, and resources assigned','Confirm phones have Summit County Alert + Watch Duty notifications on','Check in with neighbors, especially anyone elderly or without a car'] },
+  { key:'ready', label:'Ready', color:'var(--low)', text:'#0d1a12',
+    desc:'The fire is close enough to matter. This matches Summit County/Park City\'s official "Ready" stage — get prepared, but there\'s no need to leave yet.',
+    actions:['Confirm go-bags are packed (meds, documents, chargers, cash, pet supplies)','Top off vehicle fuel','Clear leaves/debris within 5 ft of the house','Photograph rooms/valuables for insurance, save off-site','Agree on two evacuation routes with the family'] },
+  { key:'set', label:'Set', color:'var(--high)', text:'#1c1b19',
+    desc:'The fire could reach you. This matches the official "Set" stage — pack the vehicle and prepare the home now, so you can leave the moment it\'s time.',
+    actions:['Load go-bags, pets, and valuables into the vehicle','Back the vehicle in/out so it\'s facing your exit route','Close all windows and doors; move flammable curtains/furniture from windows','Shut off gas at the meter if instructed by officials','Turn on outside lights and leave a light on inside (visibility in smoke)','Move patio furniture/doormats away from the house'] },
+  { key:'go', label:'Go', color:'var(--extreme)', text:'#1c0800',
+    desc:'This matches the official "Go" stage — leave immediately. Don\'t wait for a personal escort or to gather more things.',
+    actions:['Leave now via your planned route — don\'t wait for a knock on the door','Take your alternate route immediately if the main one is blocked','Text (not call) your out-of-area contact once you\'re safely away','Keep Watch Duty on for road closure updates'] },
+  { key:'return', label:'Return', color:'var(--moderate)', text:'#0b1a22',
+    desc:'The immediate danger has passed. Wait for an official all-clear before heading back.',
+    actions:['Confirm the official all-clear/re-entry announcement — don\'t self-return early','Check AirNow for smoke/air quality before opening up the house','Check CommuterLink for road status before driving back','Inspect the home exterior for embers/hot spots before going inside'] }
+];
+
+let stageIdx = 1; // default to "Ready" — sensible baseline once you're watching an active fire
+let stageTicks = {}; // { stageKey: [bool,...] }
+
+function stageStorageKey(){ return 'actionStage'; }
+
+async function saveStageState(){
+  try{
+    if(window.storage) await window.storage.set(stageStorageKey(), JSON.stringify({idx:stageIdx, ticks:stageTicks}), false);
+  }catch(e){ /* not critical */ }
+}
+async function restoreStageState(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(stageStorageKey());
+      if(res && res.value){
+        const s = JSON.parse(res.value);
+        if(typeof s.idx === 'number') stageIdx = s.idx;
+        if(s.ticks) stageTicks = s.ticks;
+      }
+    }
+  }catch(e){ /* nothing saved yet, or storage unavailable */ }
+  renderStage();
+}
+
+function renderStage(){
+  const bar = document.getElementById('stageBar');
+  bar.innerHTML = '';
+  STAGES.forEach((s,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'seg' + (i===stageIdx?' current':'') + (i<stageIdx?' done':'');
+    seg.textContent = s.label;
+    if(i===stageIdx){ seg.style.background = s.color; seg.style.color = s.text; }
+    seg.addEventListener('click', ()=>{ stageIdx = i; saveStageState(); renderStage(); });
+    bar.appendChild(seg);
+  });
+  const s = STAGES[stageIdx];
+  const pill = document.getElementById('stagePill');
+  pill.textContent = s.label.toUpperCase();
+  pill.style.background = s.color;
+  pill.style.color = s.text;
+  document.getElementById('stageDesc').textContent = s.desc;
+
+  const ticks = stageTicks[s.key] || [];
+  const list = document.getElementById('stageChecklist');
+  list.innerHTML = '';
+  s.actions.forEach((action,i)=>{
+    const label = document.createElement('label');
+    const checked = !!ticks[i];
+    if(checked) label.classList.add('done');
+    label.innerHTML = `<input type="checkbox" ${checked?'checked':''}> ${action}`;
+    label.querySelector('input').addEventListener('change', (e)=>{
+      const arr = stageTicks[s.key] || [];
+      arr[i] = e.target.checked;
+      stageTicks[s.key] = arr;
+      label.classList.toggle('done', e.target.checked);
+      saveStageState();
+    });
+    list.appendChild(label);
+  });
+
+  document.getElementById('btnStageBack').disabled = stageIdx===0;
+  document.getElementById('btnStageForward').disabled = stageIdx===STAGES.length-1;
+}
+
+document.getElementById('btnStageBack').addEventListener('click', ()=>{
+  if(stageIdx>0){ stageIdx--; saveStageState(); renderStage(); }
+});
+document.getElementById('btnStageForward').addEventListener('click', ()=>{
+  if(stageIdx<STAGES.length-1){ stageIdx++; saveStageState(); renderStage(); }
+});
+
+function checkStageNudge(features){
+  const nudge = document.getElementById('stageNudge');
+  if(!features || !features.length || stageIdx >= 3){ nudge.style.display='none'; return; }
+  const hit = features.find(f => /evacuat|leave the area|fire warning/i.test((f.properties.event||'')+' '+(f.properties.headline||'')));
+  if(hit){
+    nudge.style.display = 'block';
+    nudge.innerHTML = `⚠ A live alert mentions evacuation-related language: <strong>${hit.properties.event}</strong>. Consider whether it's time to move to SET or GO above.`;
+  }else{
+    nudge.style.display = 'none';
+  }
+}
+
+const COMPASS_DEG = {N:0,NNE:22.5,NE:45,ENE:67.5,E:90,ESE:112.5,SE:135,SSE:157.5,S:180,SSW:202.5,SW:225,WSW:247.5,W:270,WNW:292.5,NW:315,NNW:337.5};
+function compassToDeg(str){
+  if(!str) return null;
+  const clean = str.trim().toUpperCase();
+  return COMPASS_DEG.hasOwnProperty(clean) ? COMPASS_DEG[clean] : null;
+}
+function angDiff(a,b){
+  const d = Math.abs(a-b) % 360;
+  return d > 180 ? 360-d : d;
+}
+function roughSpreadRateMph(windMph){
+  if(windMph < 10) return [0.3, 1];
+  if(windMph < 20) return [1, 3];
+  if(windMph < 30) return [3, 6];
+  return [6, 12];
+}
+function evalWindThreat(){
+  const el = document.getElementById('windThreatResult');
+  const distMiles = parseFloat(document.getElementById('fireDistance').value);
+  const bearingDeg = parseFloat(document.getElementById('fireBearing').value);
+  if(isNaN(distMiles) || document.getElementById('fireBearing').value === ''){
+    el.innerHTML = '<span class="err">Enter both the distance and direction to the fire.</span>';
+    return;
+  }
+  if(!lastWeather || lastWeather.windDirDeg === null || lastWeather.windDirDeg === undefined){
+    el.innerHTML = '<span class="err">Live wind data isn\'t loaded yet — wait a moment for the gauge above to update, then try again.</span>';
+    return;
+  }
+  const windMph = lastWeather.windMph;
+  const diff = angDiff(lastWeather.windDirDeg, bearingDeg);
+  let level, color, textColor, text;
+  if(diff <= 45){
+    level='HIGH'; color='var(--extreme)'; textColor='#fff';
+    text = `Wind (${windMph} mph from the ${lastWeather.windDirCompass}) is blowing roughly from the fire's direction toward your home — the most dangerous alignment.`;
+  }else if(diff <= 90){
+    level='MODERATE'; color='var(--veryhigh)'; textColor='#1c1200';
+    text = `Wind (${windMph} mph from the ${lastWeather.windDirCompass}) is angled partly toward you. A wind shift could point the fire your way.`;
+  }else{
+    level='LOWER'; color='var(--low)'; textColor='#0d1a12';
+    text = `Wind (${windMph} mph from the ${lastWeather.windDirCompass}) is currently blowing away from your direction. Don't count on that holding — wind shifts often with afternoon thermals or an outflow.`;
+  }
+  let html = `<div style="background:${color};color:${textColor};padding:10px 12px;border-radius:8px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;">Wind-Driven Threat: ${level}</div><div style="color:var(--ash);">${text}</div>`;
+  if(diff <= 90 && windMph >= 8 && distMiles > 0){
+    const [lo,hi] = roughSpreadRateMph(windMph);
+    const hiHours = (distMiles/lo).toFixed(1);
+    const loHours = (distMiles/hi).toFixed(1);
+    html += `<div style="margin-top:8px;color:var(--ash);">Very rough order-of-magnitude: at ${distMiles} mi under this wind, a wind-driven surface fire advancing straight at you could take somewhere around ${loHours}–${hiHours} hours — <em>if</em> it kept coming directly at that pace the whole way, which real fires rarely do cleanly. This is a gut-check, not a forecast — always defer to the actual reported spread on Watch Duty/InciWeb.</div>`;
+  }
+  html += `<div style="margin-top:8px;color:var(--ash-dim);font-size:12px;">Reminder: fire moves much faster uphill than on flat ground. If the fire is below Trailside/Sagebrook on a slope, treat it as more urgent than distance alone suggests.</div>`;
+  el.innerHTML = html;
+}
+document.getElementById('btnCheckWindThreat').addEventListener('click', evalWindThreat);
+
+function evalTriggers(){
+  const hardChecked = Array.from(document.querySelectorAll('#hardTriggers input')).some(i=>i.checked);
+  const softCount = Array.from(document.querySelectorAll('#softTriggers input')).filter(i=>i.checked).length;
+
+  const hardEl = document.getElementById('hardTriggerResult');
+  hardEl.innerHTML = hardChecked
+    ? `<div style="background:var(--extreme);color:#fff;padding:12px 14px;border-radius:8px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;margin-top:8px;">🔴 Leave now — don't wait for an official order.</div>`
+    : '';
+
+  const softEl = document.getElementById('softTriggerResult');
+  if(softCount >= 2){
+    softEl.innerHTML = `<div style="background:var(--veryhigh);color:#1c1200;padding:12px 14px;border-radius:8px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;margin-top:8px;">🟠 ${softCount} warning signs present — strongly consider evacuating now.</div>`;
+  }else if(softCount === 1){
+    softEl.innerHTML = `<div style="color:var(--high);font-size:13px;margin-top:8px;">🟡 One warning sign present — keep close watch and re-check this list often.</div>`;
+  }else{
+    softEl.innerHTML = '';
+  }
+}
+document.querySelectorAll('#hardTriggers input, #softTriggers input').forEach(inp=>{
+  inp.addEventListener('change', evalTriggers);
+});
+
+function fmtTime(d){
+  return d.toLocaleString(undefined, {weekday:'short', hour:'numeric', minute:'2-digit'});
+}
+
+function fuelStorageKey(){ return 'fuelFeedConfig'; }
+
+async function saveFuelConfig(token, stid){
+  try{
+    if(window.storage){
+      if(token && stid) await window.storage.set(fuelStorageKey(), JSON.stringify({token, stid}), false);
+      else await window.storage.delete(fuelStorageKey(), false);
+    }
+  }catch(e){ /* not critical */ }
+}
+
+async function restoreFuelConfig(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(fuelStorageKey());
+      if(res && res.value){
+        const cfg = JSON.parse(res.value);
+        document.getElementById('synToken').value = cfg.token || '';
+        document.getElementById('synStation').value = cfg.stid || '';
+        if(cfg.token && cfg.stid) loadFuelFeed(cfg.token, cfg.stid);
+      }
+    }
+  }catch(e){ /* nothing saved yet, or storage unavailable — fine */ }
+}
+
+async function loadFuelFeed(token, stid){
+  const el = document.getElementById('fuelResult');
+  el.innerHTML = '<span class="mono">connecting…</span>';
+  try{
+    const url = `https://api.synopticdata.com/v2/stations/latest?stid=${encodeURIComponent(stid)}&token=${encodeURIComponent(token)}`;
+    const data = await fetch(url).then(r=>r.json());
+    if(!data.STATION || !data.STATION.length){
+      el.innerHTML = `<span class="err">No station found for ID "${stid}" — double check it in the station explorer linked below.</span>`;
+      return;
+    }
+    const st = data.STATION[0];
+    const obs = st.OBSERVATIONS || {};
+    const keys = Object.keys(obs).filter(k => /fuel|erc|energy_release|burning_index/i.test(k));
+    if(keys.length === 0){
+      el.innerHTML = `<span class="err">Connected to ${st.NAME || stid}, but it doesn't report fuel moisture or ERC. Pick a different station in the explorer below.</span>`;
+      return;
+    }
+    let html = `<div style="margin-bottom:6px;">Live from <strong>${st.NAME || stid}</strong> (${st.STID || stid}):</div><div class="metrics">`;
+    keys.forEach(k=>{
+      const entry = obs[k];
+      let val = '—';
+      if(entry && typeof entry === 'object'){
+        const inner = Object.values(entry)[0];
+        val = (inner !== undefined && inner !== null) ? inner : '—';
+      }
+      const label = k.replace(/_value_\d+$/,'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      html += `<div class="metric"><div class="k">${label}</div><div class="v">${val}</div></div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }catch(e){
+    el.innerHTML = '<span class="err">Could not reach Synoptic\'s API — check your token and station ID.</span>';
+  }
+}
+
+document.getElementById('btnConnectFuel').addEventListener('click', ()=>{
+  const token = document.getElementById('synToken').value.trim();
+  const stid = document.getElementById('synStation').value.trim();
+  if(!token || !stid){ alert('Enter both a token and a station ID.'); return; }
+  saveFuelConfig(token, stid);
+  loadFuelFeed(token, stid);
+});
+document.getElementById('btnClearFuel').addEventListener('click', ()=>{
+  document.getElementById('synToken').value = '';
+  document.getElementById('synStation').value = '';
+  document.getElementById('fuelResult').innerHTML = '';
+  saveFuelConfig(null, null);
+});
+
+const RAIN_THRESHOLD_MM = 2.5; // ~0.1in — our definition of "significant" daily rainfall
+const RAIN_LOOKBACK_DAYS = 16;
+
+let manualRainDate = null;   // Date or null — set when someone logs an actual observed rain day
+let lastWeather = null;      // {tempF, windMph, rh} from the most recent NWS fetch
+let lastModelRainDays = null; // number or null if the Open-Meteo fetch failed
+let lastModelCapped = false;
+
+function effectiveRainDays(){
+  if(manualRainDate){
+    const ms = Date.now() - manualRainDate.getTime();
+    return Math.max(0, Math.floor(ms/86400000));
+  }
+  return lastModelRainDays !== null ? lastModelRainDays : 7; // neutral fallback
+}
+
+function rainStorageKey(){
+  return `manualRain:${state.lat.toFixed(3)},${state.lon.toFixed(3)}`;
+}
+
+async function saveManualRain(val){
+  try{
+    if(window.storage){
+      if(val) await window.storage.set(rainStorageKey(), val, false);
+      else await window.storage.delete(rainStorageKey(), false);
+    }
+  }catch(e){ /* not critical if this doesn't persist */ }
+}
+
+async function restoreManualRain(){
+  manualRainDate = null;
+  document.getElementById('manualRainInput').value = new Date().toISOString().slice(0,10);
+  try{
+    if(window.storage){
+      const res = await window.storage.get(rainStorageKey());
+      if(res && res.value){
+        manualRainDate = new Date(res.value+'T12:00:00');
+        document.getElementById('manualRainInput').value = res.value;
+      }
+    }
+  }catch(e){ /* nothing stored for this location yet, or storage unavailable — fine */ }
+}
+
+function updateRainDisplay(){
+  const el = document.getElementById('mRain');
+  const tag = document.getElementById('rainSourceTag');
+  if(manualRainDate){
+    const days = effectiveRainDays();
+    el.textContent = days===0 ? 'rained today' : `${days} day${days===1?'':'s'}`;
+    tag.textContent = '(logged at home)';
+  }else if(lastModelRainDays !== null){
+    el.textContent = lastModelCapped ? `${RAIN_LOOKBACK_DAYS}+ days` : (lastModelRainDays===0?'rained today':`${lastModelRainDays} day${lastModelRainDays===1?'':'s'}`);
+    tag.textContent = '(modeled)';
+  }else{
+    el.textContent = 'unavailable';
+    tag.textContent = '';
+  }
+  recomputeScore();
+}
+
+function recomputeScore(){
+  if(!lastWeather) return;
+  const {tempF, windMph, rh} = lastWeather;
+  const rainDays = effectiveRainDays();
+  const windScore = Math.min(windMph/30,1)*30;
+  const dryScore = rh !== null ? Math.min(Math.max(100-rh,0)/90,1)*25 : 12;
+  const heatScore = Math.min(Math.max(tempF-50,0)/50,1)*20;
+  const rainScore = Math.min(rainDays/14,1)*25;
+  const score = Math.min(windScore+dryScore+heatScore+rainScore,100);
+  applyGauge(score);
+}
+
+document.getElementById('btnLogRain').addEventListener('click', ()=>{
+  const val = document.getElementById('manualRainInput').value;
+  if(!val){ alert('Pick a date first.'); return; }
+  manualRainDate = new Date(val+'T12:00:00');
+  saveManualRain(val);
+  updateRainDisplay();
+});
+document.getElementById('btnClearRain').addEventListener('click', ()=>{
+  manualRainDate = null;
+  saveManualRain(null);
+  updateRainDisplay();
+});
+
+async function loadRain(){
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${state.lat}&longitude=${state.lon}&daily=precipitation_sum&past_days=${RAIN_LOOKBACK_DAYS}&forecast_days=1&timezone=auto`;
+    const data = await fetch(url).then(r=>r.json());
+    const dates = data.daily.time;
+    const precip = data.daily.precipitation_sum;
+    const todayIdx = dates.length - 1; // today's running/provisional total, updates through the day
+    let daysSince = null;
+    for(let i=todayIdx;i>=0;i--){
+      if(precip[i] !== null && precip[i] >= RAIN_THRESHOLD_MM){
+        daysSince = todayIdx - i;
+        break;
+      }
+    }
+    lastModelCapped = daysSince === null;
+    lastModelRainDays = lastModelCapped ? RAIN_LOOKBACK_DAYS : daysSince;
+  }catch(e){
+    lastModelRainDays = null;
+    lastModelCapped = false;
+  }
+  updateRainDisplay();
+}
+
+async function loadWeather(){
+  const rainPromise = loadRain();
+  try{
+    const pt = await fetch(`https://api.weather.gov/points/${state.lat},${state.lon}`).then(r=>r.json());
+    const hourlyUrl = pt.properties.forecastHourly;
+    const hourly = await fetch(hourlyUrl).then(r=>r.json());
+    const period = hourly.properties.periods[0];
+    const tempF = period.temperature;
+    const windMph = parseInt((period.windSpeed || '0').split(' ')[0]) || 0;
+    const rh = period.relativeHumidity && typeof period.relativeHumidity.value === 'number' ? period.relativeHumidity.value : null;
+    const windDirDeg = compassToDeg(period.windDirection);
+    lastWeather = { tempF, windMph, rh, windDirDeg, windDirCompass: period.windDirection };
+
+    document.getElementById('mWind').textContent = `${windMph} mph ${period.windDirection || ''}`;
+    document.getElementById('mTemp').textContent = `${tempF}°F`;
+    document.getElementById('mRH').textContent = rh !== null ? `${Math.round(rh)}%` : '—';
+    document.getElementById('updatedAt').textContent = `Updated ${fmtTime(new Date())} · NWS + Open-Meteo`;
+
+    await rainPromise;
+    recomputeScore();
+  }catch(e){
+    await rainPromise;
+    lastWeather = null;
+    document.getElementById('catDesc').textContent = 'Could not load live NWS data (network/CORS). Check forecast directly at weather.gov.';
+    document.getElementById('updatedAt').textContent = '';
+    document.getElementById('catPill').textContent = 'DATA UNAVAILABLE';
+    document.getElementById('catPill').style.background = 'var(--ash-dim)';
+    document.getElementById('catPill').style.color = '#000';
+  }
+}
+
+function applyGauge(score){
+  const needle = document.getElementById('needle');
+  const deg = -90 + (score/100)*180;
+  needle.style.transform = `rotate(${deg}deg)`;
+  const cats = [
+    {max:20,label:'LOW',color:'var(--low)',text:'#0d1a12',desc:'Calm, humid or cool conditions. Normal daily awareness is enough.'},
+    {max:40,label:'MODERATE',color:'var(--moderate)',text:'#0b1a22',desc:'Slightly elevated wind/dryness. Nothing alarming, worth a glance at the sources below.'},
+    {max:60,label:'HIGH',color:'var(--high)',text:'#1c1b19',desc:'Warm, dry and breezy. New ignitions could spread quickly — good day to check FIRMS if you smell smoke.'},
+    {max:80,label:'VERY HIGH',color:'var(--veryhigh)',text:'#1c1200',desc:'Hot, dry, windy. Confirm your go-bags and routes are ready; watch for Red Flag Warnings.'},
+    {max:101,label:'EXTREME',color:'var(--extreme)',text:'#1c0800',desc:'Critical fire weather. Any ignition could spread explosively. Stay near your phone and check alerts often.'}
+  ];
+  const cat = cats.find(c=>score<c.max);
+  const pill = document.getElementById('catPill');
+  pill.textContent = cat.label;
+  pill.style.background = cat.color;
+  pill.style.color = cat.text;
+  document.getElementById('catDesc').textContent = cat.desc;
+}
+
+function renderAlerts(containerId, features){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  if(!features || features.length===0){
+    el.innerHTML = '<div class="empty-ok">No active NWS alerts for this location right now.</div>';
+    return;
+  }
+  features.forEach(f=>{
+    const p = f.properties;
+    const sev = (p.severity||'').toLowerCase();
+    const div = document.createElement('div');
+    div.className = 'alertitem sev-'+sev;
+    const exp = p.expires ? new Date(p.expires).toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'}) : '';
+    div.innerHTML = `<div class="ev">${p.event}</div><div>${p.headline||''}</div><div class="exp">expires ${exp}</div>`;
+    el.appendChild(div);
+  });
+}
+
+async function loadAlerts(){
+  try{
+    const data = await fetch(`https://api.weather.gov/alerts/active?point=${state.lat},${state.lon}`).then(r=>r.json());
+    renderAlerts('alertsBaseline', data.features);
+    renderAlerts('alertsActive', data.features);
+    checkStageNudge(data.features);
+  }catch(e){
+    document.getElementById('alertsBaseline').innerHTML = '<div class="err">Could not load live alerts — check <a href="https://alerts.weather.gov" target="_blank" style="color:var(--high);">alerts.weather.gov</a> directly.</div>';
+    document.getElementById('alertsActive').innerHTML = document.getElementById('alertsBaseline').innerHTML;
+  }
+}
+
+function expandWind(){
+  const overlay = document.getElementById('windFullscreenOverlay');
+  const iframe = document.getElementById('windyWidget');
+  iframe.style.height = '';
+  overlay.appendChild(iframe);
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function collapseWind(){
+  const row = document.getElementById('windWidgetRow');
+  const iframe = document.getElementById('windyWidget');
+  row.appendChild(iframe);
+  document.getElementById('windFullscreenOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+document.getElementById('btnExpandWind').addEventListener('click', expandWind);
+document.getElementById('btnCloseWind').addEventListener('click', collapseWind);
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && !document.getElementById('windFullscreenOverlay').classList.contains('hidden')) collapseWind();
+});
+
+document.getElementById('checklist').addEventListener('change', (e)=>{
+  if(e.target.tagName==='INPUT'){
+    e.target.closest('label').classList.toggle('done', e.target.checked);
+  }
+});
+
+function loadAll(){ loadWeather(); loadAlerts(); }
+(async ()=>{ await restoreManualRain(); loadAll(); })();
+restoreFuelConfig();
+restoreStageState();
+setInterval(loadAll, 10*60*1000); // refresh every 10 minutes — does NOT touch the manual rain log
+</script>
+</body>
+</html>
