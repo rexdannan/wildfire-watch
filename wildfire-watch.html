@@ -197,12 +197,7 @@
     <div class="panel">
       <h2>Smoke / Air Quality Right Now</h2>
       <div class="widgetrow">
-        <div class="card" style="flex:0 0 200px;">
-          <div class="tag">Live AQI dial</div>
-          <h3>AirNow — Park City, UT</h3>
-          <p>AirNow blocks its widget from loading inside locally-opened HTML files, so this opens the live dial in its own tab instead.</p>
-          <a class="btn" id="airnowLink" href="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" target="_blank">Open live AQI dial ↗</a>
-        </div>
+        <iframe id="airnowWidget" title="AirNow AQI" height="240" width="200" src="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" style="border-radius:16px;"></iframe>
         <div style="flex:1;min-width:220px;font-size:13px;color:var(--ash);">
           Even without a nearby fire, smoke can drift in from hundreds of miles away. A sudden AQI spike with no other explanation is often the first sign of a new fire upwind — worth cross-checking against the satellite map below.
         </div>
@@ -514,7 +509,7 @@ document.getElementById('btnUpdate').addEventListener('click', ()=>{
   if(isNaN(lat) || isNaN(lon)){ alert('Enter valid latitude/longitude.'); return; }
   state = { lat, lon, city, stateAbbr: st };
   document.getElementById('locStatus').textContent = `watching ${city}, ${st}`;
-  document.getElementById('airnowLink').href = `https://widget.airnow.gov/aq-dial-widget/?city=${encodeURIComponent(city)}&state=${encodeURIComponent(st)}&country=USA`;
+  document.getElementById('airnowWidget').src = `https://widget.airnow.gov/aq-dial-widget/?city=${encodeURIComponent(city)}&state=${encodeURIComponent(st)}&country=USA`;
   document.getElementById('windyWidget').src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=8&level=surface&overlay=wind&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
   restoreManualRain().then(loadAll);
 });
