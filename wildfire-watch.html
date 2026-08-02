@@ -175,6 +175,10 @@
           <div class="desc" id="catDesc">Fetching live wind, humidity and temperature from the National Weather Service…</div>
           <div class="updated mono" id="updatedAt">—</div>
         </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ash-dim);">Air Quality (Live AQI)</div>
+          <iframe id="airnowWidget" title="AirNow AQI" height="200" width="160" src="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" style="border-radius:12px;flex-shrink:0;"></iframe>
+        </div>
       </div>
       <div class="metrics" id="metrics">
         <div class="metric"><div class="k">Wind</div><div class="v" id="mWind">—</div></div>
@@ -188,22 +192,12 @@
         <button id="btnLogRain">Log it</button>
         <button id="btnClearRain" class="secondary">Use model estimate instead</button>
       </div>
-      <div class="caveat">This gauge is a simplified estimate — wind, humidity, heat, and days since significant rain (≥0.1in/2.5mm, from Open-Meteo's daily rainfall history) — computed live and rebalanced across those four factors. It is <strong>not</strong> an official fire danger rating. For the authoritative rating, check the Great Basin GACC and Utah Fire Info links below. Always defer to official Red Flag Warnings and evacuation orders.<br><br><strong>Local note:</strong> Trailside/Sagebrook sits directly against Round Valley's sagebrush, scrub oak and grassland — a classic wildland-urban interface. That fuel dries out fast in a hot, low-humidity stretch, so treat sustained wind + low humidity + a long rain-free stretch as your cue to check FIRMS even with no smoke visible yet.</div>
+      <div class="caveat">This gauge is a simplified estimate — wind, humidity, heat, and days since significant rain (≥0.1in/2.5mm, from Open-Meteo's daily rainfall history) — computed live and rebalanced across those four factors. It is <strong>not</strong> an official fire danger rating. For the authoritative rating, check the Great Basin GACC and Utah Fire Info links below. Always defer to official Red Flag Warnings and evacuation orders.<br><br><strong>Local note:</strong> Trailside/Sagebrook sits directly against Round Valley's sagebrush, scrub oak and grassland — a classic wildland-urban interface. That fuel dries out fast in a hot, low-humidity stretch, so treat sustained wind + low humidity + a long rain-free stretch as your cue to check FIRMS even with no smoke visible yet.<br><br>Smoke and particulates often arrive before the fire itself — sometimes from hundreds of miles away. A sudden AQI spike with no visible local fire is often the first sign of a new fire upwind of you. Check the AQI widget above alongside these metrics and cross-reference with NASA FIRMS.</div>
     </div>
 
     <div class="panel">
       <h2>Active NWS Alerts For Your Location</h2>
       <div id="alertsBaseline" class="alertlist"><div class="err mono">loading…</div></div>
-    </div>
-
-    <div class="panel">
-      <h2>Smoke / Air Quality Right Now</h2>
-      <div class="widgetrow">
-        <iframe id="airnowWidget" title="AirNow AQI" height="240" width="200" src="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" style="border-radius:16px;"></iframe>
-        <div style="flex:1;min-width:220px;font-size:13px;color:var(--ash);">
-          Even without a nearby fire, smoke can drift in from hundreds of miles away. A sudden AQI spike with no other explanation is often the first sign of a new fire upwind — worth cross-checking against the satellite map below.
-        </div>
-      </div>
     </div>
 
     <div class="panel">
