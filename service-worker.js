@@ -30,12 +30,42 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event: network-first for live data, cache-first for static assets
+// Fetch event: network-first for HTML/CSS/JS/JSON, cache-first for everything else
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // Network-first for HTML, CSS, JS, JSON (always check for updates first)
+  if (url.pathname.endsWith('.html') || 
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname.endsWith('.json')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Don't cache error responses
+          if (!response || response.status !== 200 || response.type === 'error') {
+            return response;
+          }
+          // Update cache with fresh version
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If network fails, fall back to cache
+          return caches.match(event.request).then((response) => {
+            return response || new Response('Offline — cached HTML unavailable', {
+              status: 503,
+              statusText: 'Service Unavailable'
+            });
+          });
+        })
+    );
+  }
   // Network-first for API calls (live data feeds)
-  if (url.hostname === 'api.weather.gov' ||
+  else if (url.hostname === 'api.weather.gov' ||
       url.hostname === 'api.open-meteo.com' ||
       url.hostname === 'api.synopticdata.com' ||
       url.hostname === 'alerts.weather.gov' ||
@@ -48,7 +78,7 @@ self.addEventListener('fetch', (event) => {
           if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
-          // Cache successful responses, but don't slow down the return
+          // Cache successful responses
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
@@ -66,27 +96,7 @@ self.addEventListener('fetch', (event) => {
         })
     );
   }
-  // Cache-first for static assets (HTML, CSS, JS)
-  else if (url.pathname.endsWith('.html') || 
-           url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.css') ||
-           url.pathname.endsWith('.json')) {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((response) => {
-          // Cache new assets on first load
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        }).catch(() => {
-          return new Response('Offline', { status: 503 });
-        });
-      })
-    );
-  }
-  // For everything else (images, fonts, etc.), use cache-first
+  // Cache-first for everything else (images, fonts, external resources)
   else {
     event.respondWith(
       caches.match(event.request).then((response) => {
