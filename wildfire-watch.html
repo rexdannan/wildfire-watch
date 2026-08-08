@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- WILDFIRE WATCH VERSION: 0.3.0 — Update this line every time you publish a new version -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -175,8 +176,7 @@
           <div class="desc" id="catDesc">Fetching live wind, humidity and temperature from the National Weather Service…</div>
           <div class="updated mono" id="updatedAt">—</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ash-dim);">Air Quality (Live AQI)</div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;">
           <iframe id="airnowWidget" title="AirNow AQI" height="200" width="160" src="https://widget.airnow.gov/aq-dial-widget/?city=Park%20City&state=UT&country=USA" style="border-radius:12px;flex-shrink:0;"></iframe>
         </div>
       </div>
@@ -479,7 +479,8 @@
 
   <footer>
     Built from public sources: NWS/api.weather.gov, AirNow.gov, Windy.com, NASA FIRMS, InciWeb, NIFC, Watch Duty, Summit County &amp; Park City emergency management, Great Basin GACC, WFAS, drought.gov.<br>
-    This page aggregates public information for convenience. It is not a substitute for official evacuation orders — if told to evacuate, leave immediately.
+    This page aggregates public information for convenience. It is not a substitute for official evacuation orders — if told to evacuate, leave immediately.<br>
+    <span id="versionDisplay" style="font-size:10px;color:var(--ash-dim);margin-top:6px;display:block;">Version loading…</span>
   </footer>
 </div>
 
@@ -1007,6 +1008,10 @@ if ('serviceWorker' in navigator) {
     console.log('Service Worker registration failed:', error);
   });
 }
+
+// Display app version (hardcoded in HTML)
+const APP_VERSION = '1.0.0';
+document.getElementById('versionDisplay').textContent = `Version ${APP_VERSION}`;
 </script>
 </body>
 </html>
