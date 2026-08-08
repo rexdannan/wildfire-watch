@@ -335,7 +335,7 @@
           <div class="tag">Best single source for a live, named fire</div>
           <h3>Watch Duty</h3>
           <p>Free nonprofit app (all 50 states, incl. Utah) staffed by firefighters/dispatchers monitoring radio traffic live. Shows fire perimeter, evacuation zones, and push alerts. Simple enough for kids and grandparents alike — put it on every family member's phone.</p>
-          <a class="btn" href="https://www.watchduty.org/" target="_blank">Open Watch Duty ↗</a>
+          <a class="btn" id="watchDutyLink" href="https://app.watchduty.org/?search=Park+City%2C+UT" target="_blank">Open Watch Duty Map ↗</a>
         </div>
         <div class="card">
           <div class="tag">Official incident record</div>
@@ -505,6 +505,7 @@ document.getElementById('btnUpdate').addEventListener('click', ()=>{
   if(isNaN(lat) || isNaN(lon)){ alert('Enter valid latitude/longitude.'); return; }
   state = { lat, lon, city, stateAbbr: st };
   document.getElementById('locStatus').textContent = `watching ${city}, ${st}`;
+  updateWatchDutyLink();
   document.getElementById('airnowWidget').src = `https://widget.airnow.gov/aq-dial-widget/?city=${encodeURIComponent(city)}&state=${encodeURIComponent(st)}&country=USA`;
   document.getElementById('windyWidget').src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=8&level=surface&overlay=wind&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
   restoreManualRain().then(loadAll);
@@ -685,6 +686,18 @@ function evalTriggers(){
 document.querySelectorAll('#hardTriggers input, #softTriggers input').forEach(inp=>{
   inp.addEventListener('change', evalTriggers);
 });
+
+function updateWatchDutyLink(){
+  const searchStr = `${state.city}%2C+${state.stateAbbr}`;
+  document.getElementById('watchDutyLink').href = `https://app.watchduty.org/?search=${searchStr}`;
+}
+
+function reloadAirNowWidget(){
+  const iframe = document.getElementById('airnowWidget');
+  const city = state.city || 'Park City';
+  const st = state.stateAbbr || 'UT';
+  iframe.src = `https://widget.airnow.gov/aq-dial-widget/?city=${encodeURIComponent(city)}&state=${encodeURIComponent(st)}&country=USA`;
+}
 
 function fmtTime(d){
   return d.toLocaleString(undefined, {weekday:'short', hour:'numeric', minute:'2-digit'});
@@ -979,11 +992,12 @@ document.getElementById('checklist').addEventListener('change', (e)=>{
   }
 });
 
-function loadAll(){ loadWeather(); loadAlerts(); }
+function loadAll(){ loadWeather(); loadAlerts(); reloadAirNowWidget(); }
 (async ()=>{ await restoreManualRain(); loadAll(); })();
 restoreFuelConfig();
 restoreStageState();
-setInterval(loadAll, 10*60*1000); // refresh every 10 minutes — does NOT touch the manual rain log
+updateWatchDutyLink();
+setInterval(loadAll, 10*60*1000); // refresh every 10 minutes — includes AQI widget reload
 
 // Register service worker for PWA support
 if ('serviceWorker' in navigator) {
