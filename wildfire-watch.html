@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- WILDFIRE WATCH VERSION: 0.3.1 — Update this line every time you publish a new version -->
+<!-- WILDFIRE WATCH VERSION: 0.3.2 — Update this line every time you publish a new version -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -289,13 +289,16 @@
 
       <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:14px 0;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ash-dim);margin-bottom:8px;">Live wind-driven threat check</div>
-        <div class="rainlog" style="margin-top:0;flex-wrap:wrap;">
-          <span style="flex-basis:100%;margin-bottom:8px;font-size:12px;color:var(--ash);">Fire location (city, state):</span>
-          <input type="text" id="fireCity" class="mono" placeholder="e.g., Park City" style="width:120px;">
-          <input type="text" id="fireState" class="mono" placeholder="UT" style="width:50px;">
-          <button id="btnCheckWindThreat">Calculate Threat</button>
+        <div style="font-size:11px;color:var(--ash);margin-bottom:10px;">Enter fire location as either city/state OR latitude/longitude:</div>
+        <div class="rainlog" style="margin-top:0;">
+          <input type="text" id="fireCity" class="mono" placeholder="City" style="width:100px;" title="City name (e.g., Park City)">
+          <input type="text" id="fireState" class="mono" placeholder="State" style="width:45px;" title="State (e.g., UT)">
+          <span style="color:var(--ash-dim);font-size:11px;padding:0 6px;display:flex;align-items:center;">OR</span>
+          <input type="number" id="fireLat" class="mono" placeholder="Latitude" style="width:100px;" step="0.0001" min="-90" max="90" title="Fire latitude">
+          <input type="number" id="fireLon" class="mono" placeholder="Longitude" style="width:100px;" step="0.0001" min="-180" max="180" title="Fire longitude">
+          <button id="btnCheckWindThreat">Calculate</button>
         </div>
-        <div style="font-size:11px;color:var(--ash-dim);margin-top:8px;">Enter the city and state where the fire is located (from Watch Duty or news reports). Distance and wind threat are calculated automatically from your location.</div>
+        <div style="font-size:11px;color:var(--ash-dim);margin-top:8px;">From Watch Duty use city/state; from NASA FIRMS use coordinates. Live wind data will be applied automatically.</div>
         <div id="windThreatResult" style="margin-top:10px;font-size:13px;"></div>
       </div>
 
@@ -644,6 +647,48 @@ function calculateBearingDistance(lat1, lon1, lat2, lon2) {
   return { distance, bearing };
 }
 
+function calculateThreatFromCoordinates(fireLat, fireLon, fireLocationName) {
+  const el = document.getElementById('windThreatResult');
+  
+  if(!lastWeather || lastWeather.windDirDeg === null || lastWeather.windDirDeg === undefined){
+    el.innerHTML = '<span class="err">Live wind data isn\'t loaded yet — wait a moment for the gauge above to update, then try again.</span>';
+    return;
+  }
+  
+  const { distance: distMiles, bearing: bearingDeg } = calculateBearingDistance(state.lat, state.lon, fireLat, fireLon);
+  
+  if(distMiles < 0.1){
+    el.innerHTML = '<span style="color:var(--extreme);font-weight:600;">⚠️ Fire location appears to be at or very near your location. Verify the location.</span>';
+    return;
+  }
+  
+  const windMph = lastWeather.windMph;
+  const diff = angDiff(lastWeather.windDirDeg, bearingDeg);
+  
+  let level, color, textColor, text;
+  if(diff <= 45){
+    level='HIGH'; color='var(--extreme)'; textColor='#fff';
+    text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is blowing roughly toward the fire's direction from you — the most dangerous alignment. Fire is ${distMiles.toFixed(1)} miles away${fireLocationName ? ` (${fireLocationName})` : ''}.`;
+  }else if(diff <= 90){
+    level='MODERATE'; color='var(--veryhigh)'; textColor='#1c1200';
+    text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is angled partly toward the fire's direction. A wind shift could point the fire your way. Fire is ${distMiles.toFixed(1)} miles away${fireLocationName ? ` (${fireLocationName})` : ''}.`;
+  }else{
+    level='LOWER'; color='var(--low)'; textColor='#0d1a12';
+    text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is currently blowing away from the fire's direction. Don't count on that holding — wind shifts often with afternoon thermals. Fire is ${distMiles.toFixed(1)} miles away${fireLocationName ? ` (${fireLocationName})` : ''}.`;
+  }
+  
+  let html = `<div style="background:${color};color:${textColor};padding:10px 12px;border-radius:8px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;">Wind-Driven Threat: ${level}</div><div style="color:var(--ash);">${text}</div>`;
+  
+  if(diff <= 90 && windMph >= 8 && distMiles > 0){
+    const [lo,hi] = roughSpreadRateMph(windMph);
+    const hiHours = (distMiles/lo).toFixed(1);
+    const loHours = (distMiles/hi).toFixed(1);
+    html += `<div style="margin-top:8px;color:var(--ash);">Very rough order-of-magnitude: at ${distMiles.toFixed(1)} mi under this wind, a wind-driven surface fire advancing straight at you could take somewhere around ${loHours}–${hiHours} hours — <em>if</em> it kept coming directly at that pace the whole way, which real fires rarely do cleanly. This is a gut-check, not a forecast — always defer to the actual reported spread on Watch Duty/InciWeb.</div>`;
+  }
+  html += `<div style="margin-top:8px;color:var(--ash-dim);font-size:12px;">Reminder: fire moves much faster uphill than on flat ground. If the fire is below Trailside/Sagebrook on a slope, treat it as more urgent than distance alone suggests.</div>`;
+  el.innerHTML = html;
+}
+
 function geocodeLocation(city, state) {
   // Uses Open-Meteo's free geocoding API (no key required)
   const query = `${city}, ${state}, USA`;
@@ -660,13 +705,23 @@ function geocodeLocation(city, state) {
 
 function evalWindThreat(){
   const el = document.getElementById('windThreatResult');
-  el.innerHTML = '<span style="color:var(--ash-dim);">Looking up fire location…</span>';
   
   const fireCity = document.getElementById('fireCity').value.trim();
   const fireState = document.getElementById('fireState').value.trim();
+  const fireLat = parseFloat(document.getElementById('fireLat').value);
+  const fireLon = parseFloat(document.getElementById('fireLon').value);
   
-  if(!fireCity || !fireState){
-    el.innerHTML = '<span class="err">Enter both city and state for the fire location.</span>';
+  // Check if user provided city/state or coordinates
+  const hasCityState = fireCity && fireState;
+  const hasCoords = !isNaN(fireLat) && !isNaN(fireLon);
+  
+  if(!hasCityState && !hasCoords){
+    el.innerHTML = '<span class="err">Enter either city/state OR latitude/longitude for the fire location.</span>';
+    return;
+  }
+  
+  if(hasCityState && hasCoords){
+    el.innerHTML = '<span class="err">Enter only city/state OR coordinates, not both.</span>';
     return;
   }
   
@@ -675,44 +730,23 @@ function evalWindThreat(){
     return;
   }
   
-  geocodeLocation(fireCity, fireState)
-    .then(fireLocation => {
-      const { distance: distMiles, bearing: bearingDeg } = calculateBearingDistance(state.lat, state.lon, fireLocation.lat, fireLocation.lon);
-      
-      if(distMiles < 0.1){
-        el.innerHTML = '<span style="color:var(--extreme);font-weight:600;">⚠️ Fire location appears to be at or very near your location. Verify the city/state.</span>';
-        return;
-      }
-      
-      const windMph = lastWeather.windMph;
-      const diff = angDiff(lastWeather.windDirDeg, bearingDeg);
-      
-      let level, color, textColor, text;
-      if(diff <= 45){
-        level='HIGH'; color='var(--extreme)'; textColor='#fff';
-        text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is blowing roughly toward the fire's direction from you — the most dangerous alignment. Fire is ${distMiles.toFixed(1)} miles away (${fireLocation.name}, ${fireLocation.state}).`;
-      }else if(diff <= 90){
-        level='MODERATE'; color='var(--veryhigh)'; textColor='#1c1200';
-        text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is angled partly toward the fire's direction. A wind shift could point the fire your way. Fire is ${distMiles.toFixed(1)} miles away (${fireLocation.name}, ${fireLocation.state}).`;
-      }else{
-        level='LOWER'; color='var(--low)'; textColor='#0d1a12';
-        text = `Wind (${windMph} mph from ${lastWeather.windDirCompass}) is currently blowing away from the fire's direction. Don't count on that holding — wind shifts often with afternoon thermals. Fire is ${distMiles.toFixed(1)} miles away (${fireLocation.name}, ${fireLocation.state}).`;
-      }
-      
-      let html = `<div style="background:${color};color:${textColor};padding:10px 12px;border-radius:8px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;">Wind-Driven Threat: ${level}</div><div style="color:var(--ash);">${text}</div>`;
-      
-      if(diff <= 90 && windMph >= 8 && distMiles > 0){
-        const [lo,hi] = roughSpreadRateMph(windMph);
-        const hiHours = (distMiles/lo).toFixed(1);
-        const loHours = (distMiles/hi).toFixed(1);
-        html += `<div style="margin-top:8px;color:var(--ash);">Very rough order-of-magnitude: at ${distMiles.toFixed(1)} mi under this wind, a wind-driven surface fire advancing straight at you could take somewhere around ${loHours}–${hiHours} hours — <em>if</em> it kept coming directly at that pace the whole way, which real fires rarely do cleanly. This is a gut-check, not a forecast — always defer to the actual reported spread on Watch Duty/InciWeb.</div>`;
-      }
-      html += `<div style="margin-top:8px;color:var(--ash-dim);font-size:12px;">Reminder: fire moves much faster uphill than on flat ground. If the fire is below Trailside/Sagebrook on a slope, treat it as more urgent than distance alone suggests.</div>`;
-      el.innerHTML = html;
-    })
-    .catch(error => {
-      el.innerHTML = `<span class="err">${error.message}</span>`;
-    });
+  // If city/state provided, geocode first
+  if(hasCityState){
+    el.innerHTML = '<span style="color:var(--ash-dim);">Looking up fire location…</span>';
+    geocodeLocation(fireCity, fireState)
+      .then(fireLocation => {
+        // Update coordinate fields with geocoded values
+        document.getElementById('fireLat').value = fireLocation.lat.toFixed(4);
+        document.getElementById('fireLon').value = fireLocation.lon.toFixed(4);
+        calculateThreatFromCoordinates(fireLocation.lat, fireLocation.lon, `${fireLocation.name}, ${fireLocation.state}`);
+      })
+      .catch(error => {
+        el.innerHTML = `<span class="err">${error.message}</span>`;
+      });
+  }else{
+    // Use coordinates directly
+    calculateThreatFromCoordinates(fireLat, fireLon, null);
+  }
 }
 document.getElementById('btnCheckWindThreat').addEventListener('click', evalWindThreat);
 
@@ -1060,7 +1094,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Display app version (hardcoded in HTML)
-const APP_VERSION = '0.3.1';
+const APP_VERSION = '0.3.2';
 document.getElementById('versionDisplay').textContent = `Version ${APP_VERSION}`;
 </script>
 </body>
