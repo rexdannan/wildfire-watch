@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- WILDFIRE WATCH VERSION: 0.4.0 — Update this line every time you publish a new version -->
+<!-- WILDFIRE WATCH VERSION: 0.5.0 — Update this line every time you publish a new version -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,6 +26,11 @@
     --focus:#4a9eff;
     --tab-active:#7c5cd6;
     --action:#1fada6;
+    --aware:#8a8f98;
+    --returned:#9b8a72;
+    --stage-ready:#fbc02d;
+    --stage-set:#f57c00;
+    --stage-go:#d32f2f;
   }
   *{box-sizing:border-box;}
   body{
@@ -157,12 +162,18 @@
   .fs-bar button{min-height:40px;padding:9px 15px;}
   .fs-overlay iframe{flex:1;width:100%;border-radius:8px;}
 
-  .stagebar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .stagerow{display:flex;align-items:stretch;gap:6px;margin-bottom:16px;}
+  .stagebar{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
   .stagebar .seg{flex:1;min-width:75px;text-align:center;padding:11px 6px;border-radius:6px;font-family:'Oswald';text-transform:uppercase;letter-spacing:.04em;font-size:13px;cursor:pointer;border:1px solid var(--border);color:var(--ash-dim);background:var(--panel2);transition:.15s;min-height:44px;display:flex;align-items:center;justify-content:center;}
   .stagebar .seg:hover{border-color:var(--ash-dim);}
   .stagebar .seg.done{color:var(--ash);font-weight:500;}
   .stagebar .seg.current{font-weight:700;border-color:var(--ash);background:var(--panel);}
   .stagebar .seg:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;}
+  .stagearrow{flex:0 0 auto;width:40px;min-height:44px;border-radius:6px;border:1px solid var(--border);background:var(--panel2);color:var(--ash);font-size:16px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;}
+  .stagearrow:hover{border-color:var(--ash-dim);color:var(--paper);}
+  .stagearrow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;}
+  .stagearrow:disabled{opacity:.35;cursor:not-allowed;}
+  .stagearrow:disabled:hover{border-color:var(--border);color:var(--ash);}
 
   .alertlist{display:flex;flex-direction:column;gap:10px;}
   .alertitem{border-left:4px solid var(--high);background:var(--panel2);border-radius:0 8px 8px 0;padding:12px 14px;font-size:14px;}
@@ -192,8 +203,10 @@
     font-size:16px;
   }
   @media (max-width:600px){
-    .stagebar{gap:4px;margin-bottom:14px;}
+    .stagerow{gap:4px;margin-bottom:14px;}
+    .stagebar{gap:4px;}
     .stagebar .seg{min-width:65px;font-size:11px;padding:10px 4px;}
+    .stagearrow{width:34px;font-size:14px;}
     .alertitem{padding:10px 12px;font-size:13px;}
     .alertitem .exp{font-size:11px;}
   }
@@ -389,14 +402,13 @@
 
     <div class="panel">
       <h2>What Should We Be Doing Right Now?</h2>
-      <div class="stagebar" id="stageBar"></div>
-      <div class="cat-pill" id="stagePill" style="font-size:22px;">READY</div>
-      <div class="desc" id="stageDesc" style="color:var(--ash);font-size:13px;line-height:1.5;margin:6px 0 12px;"></div>
-      <div class="checklist" id="stageChecklist"></div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-        <button id="btnStageBack" class="expandbtn">◀ Back a stage</button>
-        <button id="btnStageForward" class="expandbtn">Advance a stage ▶</button>
+      <div class="stagerow">
+        <button id="btnStageBack" class="stagearrow" aria-label="Back a stage">◀</button>
+        <div class="stagebar" id="stageBar"></div>
+        <button id="btnStageForward" class="stagearrow" aria-label="Advance a stage">▶</button>
       </div>
+      <div class="desc" id="stageDesc" style="color:var(--ash);font-size:13px;line-height:1.5;margin:8px 0 12px;"></div>
+      <div class="checklist" id="stageChecklist"></div>
       <div id="stageNudge" class="caveat" style="display:none;margin-top:12px;border-top:1px solid var(--extreme);color:var(--veryhigh);"></div>
       <div class="caveat" style="margin-top:12px;">This is set by you, not by any feed — official Ready/Set/Go orders for your exact address always take priority over this gauge. It's here to keep everyone in the house aligned on what to do next.</div>
     </div>
@@ -618,19 +630,19 @@ document.getElementById('btnUpdate').addEventListener('click', ()=>{
 });
 
 const STAGES = [
-  { key:'aware', label:'Aware', color:'var(--moderate)', text:'#0b1a22',
+  { key:'aware', label:'Aware', color:'var(--aware)', text:'#1a1b1d',
     desc:'A fire has been reported in the region. No immediate threat to Trailside/Sagebrook yet — start paying closer attention.',
     actions:['Open Watch Duty and confirm the fire\'s location relative to home','Check InciWeb/NIFC for size, containment, and resources assigned','Confirm phones have Summit County Alert + Watch Duty notifications on','Check in with neighbors, especially anyone elderly or without a car'] },
-  { key:'ready', label:'Ready', color:'var(--low)', text:'#0d1a12',
+  { key:'ready', label:'Ready', color:'var(--stage-ready)', text:'#241d00',
     desc:'The fire is close enough to matter. This matches Summit County/Park City\'s official "Ready" stage — get prepared, but there\'s no need to leave yet.',
     actions:['Confirm go-bags are packed (meds, documents, chargers, cash, pet supplies)','Top off vehicle fuel','Clear leaves/debris within 5 ft of the house','Photograph rooms/valuables for insurance, save off-site','Agree on two evacuation routes with the family'] },
-  { key:'set', label:'Set', color:'var(--high)', text:'#1c1b19',
+  { key:'set', label:'Set', color:'var(--stage-set)', text:'#2b1400',
     desc:'The fire could reach you. This matches the official "Set" stage — pack the vehicle and prepare the home now, so you can leave the moment it\'s time.',
     actions:['Load go-bags, pets, and valuables into the vehicle','Back the vehicle in/out so it\'s facing your exit route','Close all windows and doors; move flammable curtains/furniture from windows','Shut off gas at the meter if instructed by officials','Turn on outside lights and leave a light on inside (visibility in smoke)','Move patio furniture/doormats away from the house'] },
-  { key:'go', label:'Go', color:'var(--extreme)', text:'#1c0800',
+  { key:'go', label:'Go', color:'var(--stage-go)', text:'#fff',
     desc:'This matches the official "Go" stage — leave immediately. Don\'t wait for a personal escort or to gather more things.',
     actions:['Leave now via your planned route — don\'t wait for a knock on the door','Take your alternate route immediately if the main one is blocked','Text (not call) your out-of-area contact once you\'re safely away','Keep Watch Duty on for road closure updates'] },
-  { key:'return', label:'Return', color:'var(--moderate)', text:'#0b1a22',
+  { key:'return', label:'Return', color:'var(--returned)', text:'#1c150c',
     desc:'The immediate danger has passed. Wait for an official all-clear before heading back.',
     actions:['Confirm the official all-clear/re-entry announcement — don\'t self-return early','Check AirNow for smoke/air quality before opening up the house','Check CommuterLink for road status before driving back','Inspect the home exterior for embers/hot spots before going inside'] }
 ];
@@ -671,10 +683,6 @@ function renderStage(){
     bar.appendChild(seg);
   });
   const s = STAGES[stageIdx];
-  const pill = document.getElementById('stagePill');
-  pill.textContent = s.label.toUpperCase();
-  pill.style.background = s.color;
-  pill.style.color = s.text;
   document.getElementById('stageDesc').textContent = s.desc;
 
   const ticks = stageTicks[s.key] || [];
@@ -1230,7 +1238,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Display app version (hardcoded in HTML)
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.5.0';
 document.getElementById('versionDisplay').textContent = `Version ${APP_VERSION}`;
 </script>
 </body>
