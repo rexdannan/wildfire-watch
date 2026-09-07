@@ -1,5 +1,9 @@
 # Wildfire Watch
 
+**Version 0.5.5**
+- Moved pre-requisite checklists and information resources to their own Prep Guide page
+- Added functionality to allow local device alerting without a central server or users' personal information
+
 **Version 0.5.0**
 
 A family wildfire evacuation dashboard for the Trailside/Sagebrook area of Park City, Utah. Wildfire Watch pulls together live weather, fire, air-quality, and traffic data into three focused views so a household can move from casual monitoring to an active evacuation decision without hunting across a dozen different sites.
@@ -67,14 +71,3 @@ MIT — see [LICENSE](LICENSE). Use it, adapt it, borrow the patterns for your o
 - Fuel Moisture/ERC requires manually identifying a nearby RAWS station; there's no automatic "nearest station" lookup yet.
 - Single hardcoded default location (Park City/Trailside-Sagebrook); the header location selector lets you override this per-session, but there's no saved multi-location/multi-household support.
 - No automated tests — this is a hand-maintained single file.
-
-## Suggested additions to consider
-
-A few things came up during review that aren't yet reflected above because they're still open:
-
-1. **A CHANGELOG.md** — this project has already moved through several meaningful versions (0.3.2 → 0.4.0 → 0.5.0) with real behavioral changes each time (tab reordering, color system overhaul, header redesign). Worth capturing that history somewhere durable now, before it's lost to memory.
-2. **A "last reviewed" date on data sources** — external links (UDOT pages, county alert signup, etc.) are exactly the kind of thing that silently rot. A simple maintenance note (e.g., "links last verified: <date>") would help you know when it's time to re-check them.
-3. **Screenshots or a short GIF** in the README — helpful for anyone (including future you) trying to remember what a tab looks like without opening the file.
-4. **A "how to deploy" section** — the manifest's `start_url`/`scope` assume a `/wildfire-watch/` path; worth documenting where/how you actually host this (GitHub Pages? a home server?) so redeployment isn't a rediscovery exercise.
-
-Let me know which of these you'd like me to actually add — happy to draft a CHANGELOG from our session history, or add a deployment section if you tell me where this is hosted.

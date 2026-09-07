@@ -21,8 +21,6 @@ This file tracks two things: what's needed before this project is genuinely read
 - Native camera thumbnail embed on Evacuation Watch (needs a free UDOT developer API key)
 - Automatic "nearest RAWS station" lookup for Fuel Moisture/ERC, instead of manual station-map lookup
 - Multi-location/household support (currently one hardcoded default + a session-only override)
-- Use device's local capabilities to alert. I.e. allow people to know there is an issue without storing people's personal information
-- Move baseline preparation related items to a separate page/section (TBD)
 - Add more routes
 - Logic to suggest a route
 - Convert to GO?

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- WILDFIRE WATCH VERSION: 0.5.0 — Update this line every time you publish a new version -->
+<!-- WILDFIRE WATCH VERSION: 0.5.5 — Update this line every time you publish a new version -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -261,6 +261,8 @@
     <div class="loc-row">
       <span class="loc-status mono" id="locStatus">watching Park City, UT (Trailside/Sagebrook, approx.)</span>
       <button id="btnLocToggle" class="loc-toggle">Change ▾</button>
+      <a href="prep.html" class="loc-toggle" style="text-decoration:none;display:inline-flex;align-items:center;">📋 Prep Guide</a>
+      <button id="btnEnableAlerts" class="loc-toggle">🔔 Enable Alerts</button>
       <div class="loc-fields hidden" id="locFields">
         <label>City</label><input class="city mono" id="inCity" value="Park City">
         <label>State</label><input class="mono" id="inState" value="UT" style="width:44px">
@@ -313,48 +315,6 @@
     </div>
 
     <div class="panel">
-      <h2>Deeper Sources — Check These When Something Feels Off</h2>
-      <div class="grid">
-        <div class="card">
-          <div class="tag">Satellite &middot; catches fires before they're reported</div>
-          <h3>NASA FIRMS Fire Map</h3>
-          <p>Near-real-time satellite heat detections (VIIRS/MODIS), updated multiple times a day. Often shows a new hotspot before any agency announcement.</p>
-          <a class="btn" href="https://firms.modaps.eosdis.nasa.gov/usfs/map/" target="_blank">Open map ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">State agency</div>
-          <h3>Utah Fire Info</h3>
-          <p>Official statewide fire restrictions, active fire listings and prevention updates. Also follow @UtahWildfire on social media.</p>
-          <a class="btn" href="https://utahfireinfo.gov" target="_blank">Visit site ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Predictive services</div>
-          <h3>Great Basin GACC Outlook</h3>
-          <p>Regional significant-fire-potential outlook and energy release component trends for Utah/the Great Basin — the professional forecast behind local fire danger signs.</p>
-          <a class="btn" href="https://gacc.nifc.gov/gbcc/" target="_blank">View outlook ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Fuel dryness</div>
-          <h3>Wildland Fire Assessment System</h3>
-          <p>Fuel moisture and Energy Release Component maps — a direct read on how ready local vegetation is to burn.</p>
-          <a class="btn" href="https://www.wfas.net" target="_blank">Open WFAS ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Drought context</div>
-          <h3>US Drought Monitor</h3>
-          <p>Weekly drought severity for your county — sustained drought is the slow-building backdrop behind most bad fire seasons.</p>
-          <a class="btn" href="https://www.drought.gov" target="_blank">Check drought.gov ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Official forecast</div>
-          <h3>NWS Fire Weather Zone Forecast</h3>
-          <p>The Red Flag Warning / Fire Weather Watch forecast discussion for your zone, straight from your local NWS office.</p>
-          <a class="btn" href="https://forecast.weather.gov/MapClick.php?lat=40.6935&lon=-111.4805" target="_blank">Open forecast ↗</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
       <h2>Fuel Moisture / Energy Release Component (ERC)</h2>
       <p style="font-size:13px;color:var(--ash);margin-top:0;">This is the real, agency-computed measure of how "ready to burn" the dead and live vegetation is — the professional version of the DIY rain-days factor above. It only comes from specific RAWS fire-weather stations, not a generic API.</p>
       <div class="grid" style="margin-bottom:14px;">
@@ -377,19 +337,6 @@
       <div class="caveat" style="margin-top:10px;">Get a free token at <a href="https://synopticdata.com/get-started" target="_blank" style="color:var(--high);">synopticdata.com</a>, then find your nearest station's ID using their <a href="https://explore.synopticdata.com" target="_blank" style="color:var(--high);">station explorer</a> — confirm it lists "fuel moisture" or "ERC" among its variables before connecting, since not all RAWS stations compute these. Your token stays in this file only; it's never sent anywhere but Synoptic's own API.</div>
     </div>
 
-    <div class="panel">
-      <h2>Family Readiness Checklist — Maintain Year-Round</h2>
-      <p style="font-size:13px;color:var(--ash);margin-top:0;">These aren't things to figure out mid-evacuation. Review this every few months — especially at the start of fire season — so they're already true by the time you'd need them. (The Active Incident tab's stage tracker will also remind you of the time-sensitive ones, like topping off fuel, once a fire is actually nearby.)</p>
-      <div class="checklist" id="checklist">
-        <label><input type="checkbox"> Go-bags packed (meds, documents, chargers, cash, pet supplies)</label>
-        <label><input type="checkbox"> Vehicle fuel tank kept at least half full during fire season</label>
-        <label><input type="checkbox"> Two evacuation routes agreed on, in different directions</label>
-        <label><input type="checkbox"> Out-of-area contact chosen; everyone knows to text, not call</label>
-        <label><input type="checkbox"> Watch Duty app + Summit County Alert (Everbridge) set up on every phone</label>
-        <label><input type="checkbox"> N95/KN95 masks on hand for smoke</label>
-        <label><input type="checkbox"> Photos of home/valuables for insurance saved off-site (cloud)</label>
-      </div>
-    </div>
   </div>
 
   <!-- ============ TAB 2: ACTIVE ============ -->
@@ -495,47 +442,6 @@
       <div class="caveat" style="margin-top:12px;">A battery-powered NOAA Weather Radio with SAME alerting is worth owning as backup — it doesn't depend on cell towers or WiFi, both of which failed during several of the fires referenced above. These checkboxes reset each time you reopen the page on purpose, so they always reflect what's true right now, not an old reading.</div>
     </div>
 
-    <div class="panel">
-      <h2>Get Alerted Directly (Set These Up Before You Need Them)</h2>
-      <div class="grid">
-        <div class="card">
-          <div class="tag">Summit County &amp; Park City (joint program)</div>
-          <h3>Summit County Alert (Everbridge)</h3>
-          <p>Official evacuation, road-closure and wildfire alerts by text, phone or email — covers Trailside/Sagebrook and all of Snyderville Basin. Text "SUMMITALERTA" to 888777 for Spanish-language alerts.</p>
-          <a class="btn" href="https://summitcountyalerts.org" target="_blank">Sign up ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Summit County</div>
-          <h3>Active Fire &amp; Emergency Page</h3>
-          <p>The county's dedicated page for live wildfire updates, plus a separate signup hub — bookmark both for a fast-moving fire.</p>
-          <a class="btn" href="https://www.summitcounty.info/emergency" target="_blank">Open page ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Federal</div>
-          <h3>FEMA App</h3>
-          <p>Real-time National Weather Service alerts plus preparedness guidance and disaster resources, for iOS and Android.</p>
-          <a class="btn" href="https://www.fema.gov/mobile-app" target="_blank">Get the app ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">No sign-up needed</div>
-          <h3>Wireless Emergency Alerts (IPAWS)</h3>
-          <p>Evacuation orders are pushed automatically to any cell phone in the affected area, no registration required — just make sure alerts aren't muted in your phone settings.</p>
-          <a class="btn" href="https://www.fema.gov/emergency-managers/practitioners/integrated-public-alert-warning-system" target="_blank">How it works ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Smoke health impact</div>
-          <h3>AirNow Fire &amp; Smoke Map</h3>
-          <p>Combines sensor and satellite smoke-plume data — useful for deciding whether to evacuate early for air quality even before a fire threatens structures.</p>
-          <a class="btn" href="https://fire.airnow.gov" target="_blank">Open map ↗</a>
-        </div>
-        <div class="card">
-          <div class="tag">Local coverage</div>
-          <h3>KSL News</h3>
-          <p>Utah's most active outlet for live wildfire coverage, reporter updates and evacuation-order confirmations.</p>
-          <a class="btn" href="https://www.ksl.com" target="_blank">Open KSL ↗</a>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ============ TAB 3: EVACUATION ============ -->
@@ -1161,11 +1067,106 @@ async function loadAlerts(){
     renderAlerts('alertsBaseline', data.features);
     renderAlerts('alertsActive', data.features);
     checkStageNudge(data.features);
+    await checkForNewAlertsAndNotify(data.features);
   }catch(e){
     document.getElementById('alertsBaseline').innerHTML = '<div class="err">Could not load live alerts — check <a href="https://alerts.weather.gov" target="_blank" style="color:var(--high);">alerts.weather.gov</a> directly.</div>';
     document.getElementById('alertsActive').innerHTML = document.getElementById('alertsBaseline').innerHTML;
   }
 }
+
+// ---- On-device alert notifications (no server, no personal data stored) ----
+const SEEN_ALERTS_KEY = 'seenAlertIds';
+let seenAlertIds = new Set();
+let seenAlertsRestored = false;
+
+async function restoreSeenAlerts(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(SEEN_ALERTS_KEY);
+      if(res && res.value) seenAlertIds = new Set(JSON.parse(res.value));
+    }
+  }catch(e){ /* first run on this device — nothing saved yet */ }
+  seenAlertsRestored = true;
+}
+
+async function saveSeenAlerts(){
+  try{
+    if(window.storage) await window.storage.set(SEEN_ALERTS_KEY, JSON.stringify([...seenAlertIds]), false);
+  }catch(e){ /* not critical */ }
+}
+
+async function notifyNewAlert(feature){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const p = feature.properties || {};
+  const title = `🚨 ${p.event || 'NWS Alert'}`;
+  const body = (p.headline || 'New NWS alert for your area — open Wildfire Watch for details.').slice(0,180);
+  try{
+    if('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, { body, tag: feature.id });
+    } else {
+      new Notification(title, { body });
+    }
+  }catch(e){ /* ignore — notification isn't critical to core functionality */ }
+}
+
+async function checkForNewAlertsAndNotify(features){
+  if(!seenAlertsRestored) await restoreSeenAlerts();
+  const list = features || [];
+  const currentIds = new Set(list.map(f=>f.id));
+  const newOnes = list.filter(f=>!seenAlertIds.has(f.id));
+  seenAlertIds = currentIds;
+  await saveSeenAlerts();
+  for(const f of newOnes){ await notifyNewAlert(f); }
+}
+
+function updateAlertBtnUI(){
+  const btn = document.getElementById('btnEnableAlerts');
+  if(!('Notification' in window)){
+    btn.textContent = 'Alerts Unsupported';
+    btn.disabled = true;
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    btn.textContent = '🔔 Alerts On';
+  }else if(Notification.permission === 'denied'){
+    btn.textContent = '🔕 Alerts Blocked';
+  }else{
+    btn.textContent = '🔔 Enable Alerts';
+  }
+}
+
+document.getElementById('btnEnableAlerts').addEventListener('click', async ()=>{
+  if(!('Notification' in window)){
+    alert('Notifications are not supported in this browser.');
+    return;
+  }
+  if(Notification.permission === 'denied'){
+    alert('Notifications are blocked for this site in your browser settings. Enable them there, then reload this page.');
+    return;
+  }
+  await Notification.requestPermission();
+  updateAlertBtnUI();
+});
+updateAlertBtnUI();
+
+// Alerts are on by default: request permission on the very first tap/click anywhere
+// on the page, since browsers block a permission prompt fired on load without a
+// user gesture. If already granted or denied, this is a harmless no-op.
+function autoRequestOnFirstInteraction(){
+  if(!('Notification' in window) || Notification.permission !== 'default') return;
+  const trigger = async ()=>{
+    document.removeEventListener('click', trigger);
+    document.removeEventListener('touchend', trigger);
+    if(Notification.permission === 'default'){
+      await Notification.requestPermission();
+      updateAlertBtnUI();
+    }
+  };
+  document.addEventListener('click', trigger, { once:true });
+  document.addEventListener('touchend', trigger, { once:true });
+}
+autoRequestOnFirstInteraction();
 
 function expandWind(){
   const overlay = document.getElementById('windFullscreenOverlay');
@@ -1188,45 +1189,13 @@ document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape' && !document.getElementById('windFullscreenOverlay').classList.contains('hidden')) collapseWind();
 });
 
-const READINESS_KEY = 'readinessChecklist';
-async function saveReadinessState(){
-  try{
-    const inputs = document.querySelectorAll('#checklist input[type=checkbox]');
-    const state = Array.from(inputs).map(i=>i.checked);
-    if(window.storage) await window.storage.set(READINESS_KEY, JSON.stringify(state), false);
-  }catch(e){ /* not critical */ }
-}
-async function restoreReadinessState(){
-  try{
-    if(window.storage){
-      const res = await window.storage.get(READINESS_KEY);
-      if(res && res.value){
-        const state = JSON.parse(res.value);
-        const inputs = document.querySelectorAll('#checklist input[type=checkbox]');
-        inputs.forEach((input,i)=>{
-          if(state[i]){
-            input.checked = true;
-            input.closest('label').classList.add('done');
-          }
-        });
-      }
-    }
-  }catch(e){ /* nothing saved yet, or storage unavailable */ }
-}
-document.getElementById('checklist').addEventListener('change', (e)=>{
-  if(e.target.tagName==='INPUT'){
-    e.target.closest('label').classList.toggle('done', e.target.checked);
-    saveReadinessState();
-  }
-});
-
 function loadAll(){ loadWeather(); loadAlerts(); reloadAirNowWidget(); }
 (async ()=>{ await restoreManualRain(); loadAll(); })();
 restoreFuelConfig();
 restoreStageState();
-restoreReadinessState();
 updateWatchDutyLink();
-setInterval(loadAll, 10*60*1000); // refresh every 10 minutes — includes AQI widget reload
+setInterval(()=>{ loadWeather(); reloadAirNowWidget(); }, 10*60*1000); // weather/AQI refresh every 10 minutes
+setInterval(loadAlerts, 2*60*1000); // alerts checked every 2 minutes — light, no-key public API, faster notification delivery
 
 // Register service worker for PWA support
 if ('serviceWorker' in navigator) {
@@ -1238,7 +1207,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Display app version (hardcoded in HTML)
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.5.5';
 document.getElementById('versionDisplay').textContent = `Version ${APP_VERSION}`;
 </script>
 </body>

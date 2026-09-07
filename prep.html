@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<!-- WILDFIRE WATCH VERSION: 0.5.5 — Update this line every time you publish a new version -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wildfire Watch — Preparedness Guide</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14130f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14130f;
+    --panel:#1e1c17;
+    --panel2:#242119;
+    --border:#38342b;
+    --paper:#ede8dd;
+    --ash:#d4cfc0;
+    --ash-dim:#a9a094;
+    --focus:#4a9eff;
+    --action:#1fada6;
+    --high:#d6b32e;
+    --extreme:#c13b2b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image: radial-gradient(circle at 20% 0%, rgba(214,179,46,0.05), transparent 45%),
+                       radial-gradient(circle at 90% 10%, rgba(193,59,43,0.06), transparent 40%);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  *:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  *:focus:not(:focus-visible){outline:none;}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px 16px 80px;}
+  @media (max-width:600px){.wrap{padding:12px 12px 80px;}}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.03em;}
+
+  header.top{display:flex;flex-direction:column;gap:6px;border-bottom:2px solid var(--border);padding-bottom:6px;margin-bottom:12px;}
+  header.top .toprow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;}
+  header.top .title{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  header.top .title .flame{color:var(--extreme);font-size:18px;align-self:center;}
+  header.top h1{font-size:16px;margin:0;font-weight:600;line-height:1;}
+  header.top .sub{color:var(--ash-dim);font-size:10px;letter-spacing:.02em;white-space:nowrap;}
+  @media (max-width:600px){
+    header.top{padding-bottom:5px;margin-bottom:10px;gap:5px;}
+    header.top h1{font-size:14px;}
+    header.top .title .flame{font-size:15px;}
+    header.top .sub{font-size:8.5px;white-space:normal;}
+  }
+
+  .back-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--panel);border:1px solid var(--border);color:var(--ash);border-radius:8px;padding:9px 14px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;font-size:12px;font-weight:600;min-height:40px;transition:.15s;}
+  .back-link:hover{border-color:var(--ash-dim);color:var(--paper);background:var(--panel2);}
+  .back-link:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  .loc-toggle{background:none;border:1px solid var(--border);color:var(--ash);border-radius:6px;padding:9px 14px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;font-size:12px;cursor:pointer;min-height:40px;transition:.15s;font-weight:600;}
+  .loc-toggle:hover{border-color:var(--ash-dim);color:var(--paper);}
+  .loc-toggle:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .loc-toggle:disabled{opacity:.5;cursor:not-allowed;}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px;}
+  .panel h2{font-family:'Oswald';text-transform:uppercase;letter-spacing:.04em;font-size:16px;color:var(--ash);margin:0 0 14px;border-bottom:1px solid var(--border);padding-bottom:10px;font-weight:600;}
+  @media (max-width:600px){.panel{padding:14px;} .panel h2{font-size:14px;margin-bottom:12px;}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+  .card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:.2s;}
+  .card:focus-within{border-color:var(--focus);}
+  .card .tag{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ash-dim);font-weight:500;}
+  .card h3{margin:0;font-size:17px;font-weight:700;}
+  .card p{margin:0;font-size:13px;color:var(--ash);line-height:1.6;flex:1;}
+  .card a.btn{align-self:flex-start;margin-top:6px;text-decoration:none;background:var(--border);color:var(--paper);font-size:12px;padding:9px 14px;border-radius:6px;font-family:'Oswald';letter-spacing:.04em;text-transform:uppercase;font-weight:600;transition:.2s;min-height:40px;display:inline-flex;align-items:center;}
+  .card a.btn:hover{background:var(--ash-dim);}
+  .card a.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .card.highlight{border-color:var(--high);background:linear-gradient(180deg,rgba(214,179,46,.1),var(--panel2));}
+  .card.highlight a.btn{background:var(--high);color:#1c1b19;}
+
+  .checklist{display:flex;flex-direction:column;gap:10px;}
+  .checklist label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ash);cursor:pointer;padding:6px;border-radius:4px;transition:.15s;}
+  .checklist label:focus-within{background:rgba(74,158,255,.05);}
+  .checklist label:hover{background:rgba(212,207,192,.05);}
+  .checklist input{margin-top:2px;accent-color:var(--high);width:20px;height:20px;cursor:pointer;flex-shrink:0;}
+  .checklist label.done{color:var(--ash-dim);text-decoration:line-through;}
+  @media (max-width:600px){
+    .grid{grid-template-columns:1fr;}
+    .checklist{gap:8px;}
+    .checklist label{font-size:13px;padding:4px;}
+  }
+
+  footer{color:var(--ash-dim);font-size:12px;text-align:center;margin-top:40px;line-height:1.7;padding-bottom:20px;}
+  footer a{color:var(--ash);text-decoration:underline;}
+  footer a:hover{color:var(--paper);}
+  footer a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="toprow">
+      <div class="title"><span class="flame">▲</span><h1>Wildfire Watch</h1><span class="sub mono">Preparedness Guide — set this up before fire season</span></div>
+      <a href="wildfire-watch.html" class="back-link">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <div class="panel">
+    <h2>Test Your Alert Setup</h2>
+    <p style="font-size:13px;color:var(--ash);margin-top:0;">Wildfire Watch notifies you on this device when a new NWS alert comes in for your location — nothing is sent through a server, and nothing about you is stored anywhere but this browser. Use the button below to confirm notifications actually reach this device before you need them for real.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button id="btnEnableAlertsPrep" class="loc-toggle">🔔 Enable Alerts</button>
+      <button id="btnTestAlert" class="loc-toggle" style="background:var(--action);border-color:var(--action);color:#fff;">Send Test Alert</button>
+      <span id="alertStatusText" class="mono" style="font-size:12px;color:var(--ash-dim);"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Family Readiness Checklist — Maintain Year-Round</h2>
+    <p style="font-size:13px;color:var(--ash);margin-top:0;">These aren't things to figure out mid-evacuation. Review this every few months — especially at the start of fire season — so they're already true by the time you'd need them. (The Active Incident tab's stage tracker will also remind you of the time-sensitive ones, like topping off fuel, once a fire is actually nearby.)</p>
+    <div class="checklist" id="checklist">
+      <label><input type="checkbox"> Go-bags packed (meds, documents, chargers, cash, pet supplies)</label>
+      <label><input type="checkbox"> Vehicle fuel tank kept at least half full during fire season</label>
+      <label><input type="checkbox"> Two evacuation routes agreed on, in different directions</label>
+      <label><input type="checkbox"> Out-of-area contact chosen; everyone knows to text, not call</label>
+      <label><input type="checkbox"> Watch Duty app + Summit County Alert (Everbridge) set up on every phone</label>
+      <label><input type="checkbox"> N95/KN95 masks on hand for smoke</label>
+      <label><input type="checkbox"> Photos of home/valuables for insurance saved off-site (cloud)</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Deeper Sources — Check These When Something Feels Off</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="tag">Satellite &middot; catches fires before they're reported</div>
+        <h3>NASA FIRMS Fire Map</h3>
+        <p>Near-real-time satellite heat detections (VIIRS/MODIS), updated multiple times a day. Often shows a new hotspot before any agency announcement.</p>
+        <a class="btn" href="https://firms.modaps.eosdis.nasa.gov/usfs/map/" target="_blank">Open map ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">State agency</div>
+        <h3>Utah Fire Info</h3>
+        <p>Official statewide fire restrictions, active fire listings and prevention updates. Also follow @UtahWildfire on social media.</p>
+        <a class="btn" href="https://utahfireinfo.gov" target="_blank">Visit site ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">State agency &middot; address-level risk</div>
+        <h3>Utah Wildfire Risk Assessment Portal</h3>
+        <p>Enter your address to see a wildfire risk assessment for your specific property, browse fire history back to 2017, and find homeowner mitigation resources.</p>
+        <a class="btn" href="https://wildfirerisk.utah.gov/" target="_blank">Open UWRAP ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Predictive services</div>
+        <h3>Great Basin GACC Outlook</h3>
+        <p>Regional significant-fire-potential outlook and energy release component trends for Utah/the Great Basin — the professional forecast behind local fire danger signs.</p>
+        <a class="btn" href="https://gacc.nifc.gov/gbcc/" target="_blank">View outlook ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Fuel dryness</div>
+        <h3>Wildland Fire Assessment System</h3>
+        <p>Fuel moisture and Energy Release Component maps — a direct read on how ready local vegetation is to burn.</p>
+        <a class="btn" href="https://www.wfas.net" target="_blank">Open WFAS ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Drought context</div>
+        <h3>US Drought Monitor</h3>
+        <p>Weekly drought severity for your county — sustained drought is the slow-building backdrop behind most bad fire seasons.</p>
+        <a class="btn" href="https://www.drought.gov" target="_blank">Check drought.gov ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Official forecast</div>
+        <h3>NWS Fire Weather Zone Forecast</h3>
+        <p>The Red Flag Warning / Fire Weather Watch forecast discussion for your zone, straight from your local NWS office.</p>
+        <a class="btn" href="https://forecast.weather.gov/MapClick.php?lat=40.6935&lon=-111.4805" target="_blank">Open forecast ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Get Alerted Directly (Set These Up Before You Need Them)</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="tag">Summit County &amp; Park City (joint program)</div>
+        <h3>Summit County Alert (Everbridge)</h3>
+        <p>Official evacuation, road-closure and wildfire alerts by text, phone or email — covers Trailside/Sagebrook and all of Snyderville Basin. Text "SUMMITALERTA" to 888777 for Spanish-language alerts.</p>
+        <a class="btn" href="https://summitcountyalerts.org" target="_blank">Sign up ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Summit County</div>
+        <h3>Active Fire &amp; Emergency Page</h3>
+        <p>The county's dedicated page for live wildfire updates, plus a separate signup hub — bookmark both for a fast-moving fire.</p>
+        <a class="btn" href="https://www.summitcounty.info/emergency" target="_blank">Open page ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Federal</div>
+        <h3>FEMA App</h3>
+        <p>Real-time National Weather Service alerts plus preparedness guidance and disaster resources, for iOS and Android.</p>
+        <a class="btn" href="https://www.fema.gov/mobile-app" target="_blank">Get the app ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">No sign-up needed</div>
+        <h3>Wireless Emergency Alerts (IPAWS)</h3>
+        <p>Evacuation orders are pushed automatically to any cell phone in the affected area, no registration required — just make sure alerts aren't muted in your phone settings.</p>
+        <a class="btn" href="https://www.fema.gov/emergency-managers/practitioners/integrated-public-alert-warning-system" target="_blank">How it works ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Smoke health impact</div>
+        <h3>AirNow Fire &amp; Smoke Map</h3>
+        <p>Combines sensor and satellite smoke-plume data — useful for deciding whether to evacuate early for air quality even before a fire threatens structures.</p>
+        <a class="btn" href="https://fire.airnow.gov" target="_blank">Open map ↗</a>
+      </div>
+      <div class="card">
+        <div class="tag">Local coverage</div>
+        <h3>KSL News</h3>
+        <p>Utah's most active outlet for live wildfire coverage, reporter updates and evacuation-order confirmations.</p>
+        <a class="btn" href="https://www.ksl.com" target="_blank">Open KSL ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built from public sources: NWS/api.weather.gov, AirNow.gov, NASA FIRMS, Utah Fire Info, Great Basin GACC, WFAS, drought.gov, FEMA, Summit County &amp; Park City emergency management.<br>
+    This page aggregates public information for convenience. It is not a substitute for official evacuation orders — if told to evacuate, leave immediately.<br>
+    <span id="versionDisplay" style="font-size:10px;color:var(--ash-dim);margin-top:6px;display:block;">Version loading…</span>
+  </footer>
+</div>
+
+<script>
+const READINESS_KEY = 'readinessChecklist';
+async function saveReadinessState(){
+  try{
+    const inputs = document.querySelectorAll('#checklist input[type=checkbox]');
+    const state = Array.from(inputs).map(i=>i.checked);
+    if(window.storage) await window.storage.set(READINESS_KEY, JSON.stringify(state), false);
+  }catch(e){ /* not critical */ }
+}
+async function restoreReadinessState(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(READINESS_KEY);
+      if(res && res.value){
+        const state = JSON.parse(res.value);
+        const inputs = document.querySelectorAll('#checklist input[type=checkbox]');
+        inputs.forEach((input,i)=>{
+          if(state[i]){
+            input.checked = true;
+            input.closest('label').classList.add('done');
+          }
+        });
+      }
+    }
+  }catch(e){ /* nothing saved yet, or storage unavailable */ }
+}
+document.getElementById('checklist').addEventListener('change', (e)=>{
+  if(e.target.tagName==='INPUT'){
+    e.target.closest('label').classList.toggle('done', e.target.checked);
+    saveReadinessState();
+  }
+});
+restoreReadinessState();
+
+// ---- Test the on-device alert notification setup ----
+function updateAlertBtnUIPrep(){
+  const btn = document.getElementById('btnEnableAlertsPrep');
+  const status = document.getElementById('alertStatusText');
+  if(!('Notification' in window)){
+    btn.textContent = 'Alerts Unsupported';
+    btn.disabled = true;
+    status.textContent = 'This browser does not support notifications.';
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    btn.textContent = '🔔 Alerts On';
+    status.textContent = 'Notifications are enabled on this device.';
+  }else if(Notification.permission === 'denied'){
+    btn.textContent = '🔕 Alerts Blocked';
+    status.textContent = 'Blocked in browser settings — enable manually, then reload.';
+  }else{
+    btn.textContent = '🔔 Enable Alerts';
+    status.textContent = 'Not yet enabled on this device.';
+  }
+}
+
+document.getElementById('btnEnableAlertsPrep').addEventListener('click', async ()=>{
+  if(!('Notification' in window)){
+    alert('Notifications are not supported in this browser.');
+    return;
+  }
+  if(Notification.permission === 'denied'){
+    alert('Notifications are blocked for this site in your browser settings. Enable them there, then reload this page.');
+    return;
+  }
+  await Notification.requestPermission();
+  updateAlertBtnUIPrep();
+});
+
+document.getElementById('btnTestAlert').addEventListener('click', async ()=>{
+  if(!('Notification' in window)){
+    alert('Notifications are not supported in this browser.');
+    return;
+  }
+  if(Notification.permission !== 'granted'){
+    await Notification.requestPermission();
+    updateAlertBtnUIPrep();
+    if(Notification.permission !== 'granted'){
+      alert('Notifications are not enabled — grant permission first, then try the test again.');
+      return;
+    }
+  }
+  const title = '🚨 TEST — Wildfire Watch Alert';
+  const body = 'This is a test. If you see this, your device is correctly set up to receive real NWS alerts.';
+  try{
+    if('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, { body, tag: 'wildfire-watch-test' });
+    }else{
+      new Notification(title, { body });
+    }
+  }catch(e){
+    alert('Could not send a test notification: ' + e.message);
+  }
+});
+updateAlertBtnUIPrep();
+
+// Register service worker for PWA support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js').then((registration) => {
+    console.log('Service Worker registered:', registration);
+  }).catch((error) => {
+    console.log('Service Worker registration failed:', error);
+  });
+}
+
+// Display app version (hardcoded in HTML)
+const APP_VERSION = '0.5.5';
+document.getElementById('versionDisplay').textContent = `Version ${APP_VERSION}`;
+</script>
+</body>
+</html>
